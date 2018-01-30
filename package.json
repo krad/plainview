@@ -1,0 +1,18 @@
+{
+  "name": "plainview",
+  "version": "0.0.1",
+  "description": "An m3u8 (HLS playlist) parser that can feed Media Source Extensions ISOBMFF streams.",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test/**/*-test.js | tap-spec"
+  },
+  "author": "iam@krad.io",
+  "license": "MIT",
+  "devDependencies": {
+    "tap-spec": "^4.1.1",
+    "tape": "^4.6.3"
+  },
+  "dependencies": {
+    "autotest": "^0.2.6"
+  }
+}
