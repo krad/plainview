@@ -1,6 +1,6 @@
-var test  = require('tape')
-var fs    = require('fs')
-var parse = require('../')
+var test      = require('tape')
+var fs        = require('fs')
+var plainview = require('../')
 
 test('test that we can test', t=> {
   t.plan(1)
@@ -10,7 +10,7 @@ test('test that we can test', t=> {
 test('that we can parse a m3u8 playlist', t=> {
   t.plan(16)
   var mock = fs.readFileSync('./test/vod.m3u8').toString()
-  var parsed = parse(mock)
+  var parsed = plainview.parseM3U8(mock)
   t.ok(parsed, 'parsed mock')
 
   t.ok(parsed.hasOwnProperty('info'), 'has playlist info')
