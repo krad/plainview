@@ -5,7 +5,9 @@ var ATOMS = [ "ftyp", "mvhd", "tkhd", "mdhd", "hdlr", "vmhd", "dref",
               "traf", "moof", "mdat", "smhd", "mp4a", "esds",]
 
 Array.prototype.flatMap = function(lambda) {
-  return Array.prototype.concat.apply([], this.map(lambda)).filter(function(x){
+  return Array.prototype.concat
+  .apply([], this.map(lambda))
+  .filter(function(x){
     if (x) { return x }
   })
 }
