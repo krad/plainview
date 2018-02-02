@@ -7,7 +7,19 @@ var playlist = require('./playlist')
 var atoms    = require('./atoms')
 var bofh     = require('./bofh')
 
+function Plainview() { }
+
+Plainview.prototype.setup = function(player, playlist, options) {
+  if (player) {
+    if (playlist) {
+    } else {
+      throw 'Please specify a playlist url'      
+    }
+  } else {
+      throw 'Please set a video tag'
+  }
+}
+
 module.exports = {
-  parseM3U8: playlist,
-  parseAtoms: atoms
+  Plainview: Plainview
 }
