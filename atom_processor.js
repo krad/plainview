@@ -86,10 +86,9 @@ var parseAVCC = function(atom, payload) {
 }
 
 var parseAVC1 = function(atom, payload) {
-  // console.log('parseAVC1')
-  // var view    = new DataView(payload.buffer, 24, 4)
-  // this.width  = view.getUint16(0)
-  // this.height = view.getUint16(1)
+  var view    = new DataView(payload.buffer, 24, 4)
+  atom.width  = view.getUint16(0)
+  atom.height = view.getUint16(2)
 }
 
 var parseSTSD = function(atom, payload) {

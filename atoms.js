@@ -207,7 +207,7 @@ module.exports = function parseAtoms(arraybuffer) {
       var view      = new DataView(sizeBytes)
       var atomSize  = view.getUint32(0)
 
-      var payload = arraybuffer.slice(cursor+4, atomSize)
+      var payload = arraybuffer.slice(cursor+4, (cursor+atomSize)-4)
       var atom = new Atom(atomName, cursor-4, atomSize, payload)
       tree.insert(atom)
 

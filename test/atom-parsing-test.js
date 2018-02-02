@@ -66,22 +66,20 @@ test('that we can find atoms by name', t=> {
   console.log(atoms)
 })
 
-// test('that can parse avc1 components', t=> {
-//   t.plan(10)
-//
-//   var parsed = parser(mock)
-//   t.ok(parsed, 'parsed init segment')
-//   t.equals(parsed.root[0].name, 'ftyp', 'has an ftyp atom')
-//
-//   var ftyp = parsed.root[0]
-//   t.ok(ftyp.hasOwnProperty('majorBrand'), 'has a majorBrand')
-//   t.equals(ftyp.majorBrand, 'mp42', 'correct majorBrand')
-//   t.equals(ftyp.minorVersion, 1, 'correct minorVersion')
-//   t.equals(ftyp.compatibleBrands.length, 4, 'correct number of compatibleBrands')
-//   t.equals(ftyp.compatibleBrands[0], 'mp41', 'compatiable brand name was correct #1')
-//   t.equals(ftyp.compatibleBrands[1], 'mp42', 'compatiable brand name was correct #2')
-//   t.equals(ftyp.compatibleBrands[2], 'isom', 'compatiable brand name was correct #3')
-//   t.equals(ftyp.compatibleBrands[3], 'hlsf', 'compatiable brand name was correct #4')
-//
-//   console.log(ftyp)
-// })
+test('that can parse avc1 components', t=> {
+  t.plan(7)
+  var parsed = parser(mock)
+  t.ok(parsed, 'parsed init segment')
+
+  var atoms = parsed.findAtoms('avc1')
+  t.ok(atoms, 'found atoms')
+  t.equals(1, atoms.length, 'found correct amount of avc1 atoms')
+
+  var avc1 = atoms[0]
+  t.ok(avc1.hasOwnProperty('width'), 'has a width property')
+  t.ok(avc1.hasOwnProperty('height'), 'has a height property')
+
+  t.equals(avc1.width, 480, 'width value was correct')
+  t.equals(avc1.height, 272, 'height value was correct')
+  console.log(avc1)
+})
