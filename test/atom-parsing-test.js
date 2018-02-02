@@ -110,14 +110,42 @@ test('that we can parse avcC components', t=> {
   console.log(avcC)
 })
 
-test('top level information in the tree', t=> {
+test('that we can parse esds components', t=>{
+  t.plan(10)
+
+  var parsed = parser(mock)
+  t.ok(parsed, 'parsed init segment')
+
+  var atoms = parsed.findAtoms('esds')
+  t.ok(atoms, 'found atoms')
+  t.equals(1, atoms.length, 'found correct amount of esds atoms')
+
+  var esds = atoms[0]
+  t.equals(esds.name, 'esds', 'got the right atom')
+  t.ok(esds.hasOwnProperty('objectProfileIndication'), 'has objectProfileIndication')
+  t.equals(esds.objectProfileIndication, 64, 'has correct objectProfileIndication (audio)')
+
+  t.ok(esds.hasOwnProperty('audioSpecificConfig'), 'has audioSpecificConfig')
+  t.ok(esds.audioSpecificConfig, 'audioSpecificConfig actually exists')
+
+  var audioSpecificConfig = esds.audioSpecificConfig
+  t.ok(audioSpecificConfig.hasOwnProperty('type'), 'has type')
+  t.equals(2, audioSpecificConfig.type)
+
+})
+
+test('that we can get codec information out of a tree', t=> {
   t.plan(4)
 
   var parsed = parser(mock)
   t.ok(parsed, 'parsed init segment')
   t.ok(parsed.hasOwnProperty('codecs'), 'has codecs property')
   t.ok(parsed.codecs, 'codecs are present')
+
+  // t.equals(parsed.codecs.length, 2, 'correct number of codecs available')
+
   t.equals(parsed.codecs[0], 'avc1.42001E', 'created codec string properly')
+  // t.equals(parsed.codecs[0], 'mp4a.42001E', 'created codec string properly')
 
   console.log(parsed.codecs)
 })

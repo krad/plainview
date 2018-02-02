@@ -195,7 +195,11 @@ function isAtom(a) {
  *  We only support avc1 atoms at this time.  This respects proper profile, level parsing.
  *
  * Audio:
- *  Support coming soon...
+ *  I've only tested this with AAC streams.
+ *  I pieced together ESDS generation from old specs and reverse engineering.
+ *  Requirements in the HLS spec are fairly slim as of this writing so this *should* cover
+ *  most use cases (AAC-LC, HE-AAC, *maybe* mp3?)
+ *  I know for a fact this will work with morsel (github.com/krad/morsel)
  *
  * @param  {AtomTree} tree A tree representing the parsed contents of an mpeg file
  * @return {Array<String>} An array of codec strings (RFC6381)
@@ -225,6 +229,11 @@ function parseCodecs(tree) {
         }
       }
     }
+  }
+
+  var audioScan = tree.findAtoms('mp4a')
+  if (audioScan && audioScan.length > 0) {
+
   }
 
   return result

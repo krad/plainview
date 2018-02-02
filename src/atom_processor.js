@@ -85,8 +85,8 @@ var parseCOLR = function(atom, payload) {
 /**
  * var parseAVCC - Parses an 'avcC' type atom
  *
- * @param  {Atom} atom    An 'avcC' type atom
- * @param  {type} payload Uint8 array of atom data starting AFTER the 4 byte atom name
+ * @param  {Atom} atom          An 'avcC' type atom
+ * @param  {Uint8Array} payload Uint8 array of atom data starting AFTER the 4 byte atom name
  */
 var parseAVCC = function(atom, payload) {
   var view                  = new DataView(payload.buffer, 0, 4)
@@ -170,8 +170,56 @@ var parseMP4A = function(atom, payload) {
   // console.log('parseMP4A')
 }
 
+
+/**
+ * AudioSpecificConfig - AudioSpecificConfig holds specifics about the audio decoder config
+ *
+ * @param  {Uint8Array} payload Payload of the 0x05 packet in the ESDS
+ * @return {AudioSpecificConfig} description
+ */
+function AudioSpecificConfig(payload) {
+  this.type          = payload[0] >> 3
+  this.frequency     = payload[0] << 1
+  this.channelConfig = null
+}
+
+/**
+ * var parseESDS - Parses an 'esds' type atom
+ *
+ * @param  {Atom} atom          An 'esds' type atom
+ * @param  {Uint8Array} payload Uint8 array of atom data starting AFTER the 4 byte atom name
+ */
 var parseESDS = function(atom, payload) {
-  // console.log('parseESDS')
+
+  /// It's an elementary stream.  Chunk it up.
+  var chunks = []
+  var currentChunk
+  for (var i = 4; i < payload.length; i++) {
+    if (payload[i+1] == 0x80) {
+      if (payload[i+2] == 0x80) {
+        if (payload[i+3] == 0x80) {
+          if (currentChunk) { chunks.push(currentChunk) }
+          currentChunk = []
+        }
+      }
+    }
+    currentChunk.push(payload[i])
+  }
+
+  // Decoder Config is signaled with 0x04
+  var decoderConfig = chunks
+  .map(function(e) { if (e[0] == 0x04) { return e }})
+  .filter(function(e){ if (e) { return e }})[0].slice(4)
+
+  atom.objectProfileIndication = decoderConfig[1]
+
+  // Audio Specific Config is signaled with 0x05
+  decoderConfig = chunks
+  .map(function(e) { if (e[0] == 0x05) { return e }})
+  .filter(function(e){ if (e) { return e }})[0].slice(4)
+
+  var audioSpecificConfigBytes  = decoderConfig.slice(1, 1+decoderConfig[0])
+  atom.audioSpecificConfig      = new AudioSpecificConfig(audioSpecificConfigBytes)
 }
 
 
