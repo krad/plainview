@@ -2,11 +2,6 @@ var test      = require('tape')
 var fs        = require('fs')
 var plainview = require('../')
 
-test('test that we can test', t=> {
-  t.plan(1)
-  t.ok(1)
-})
-
 test('that we can parse a m3u8 playlist', t=> {
   t.plan(16)
   var mock = fs.readFileSync('./test/vod.m3u8').toString()
