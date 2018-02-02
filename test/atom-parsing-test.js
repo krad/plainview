@@ -83,3 +83,28 @@ test('that can parse avc1 components', t=> {
   t.equals(avc1.height, 272, 'height value was correct')
   console.log(avc1)
 })
+
+
+test('that can parse avcC components', t=> {
+  t.plan(11)
+
+  var parsed = parser(mock)
+  t.ok(parsed, 'parsed init segment')
+
+  var atoms = parsed.findAtoms('avcC')
+  t.ok(atoms, 'found atoms')
+  t.equals(1, atoms.length, 'found correct amount of avcC atoms')
+
+  var avcC = atoms[0]
+  t.ok(avcC.hasOwnProperty('version'), 'has a version property')
+  t.ok(avcC.hasOwnProperty('profile'), 'has a profile property')
+  t.ok(avcC.hasOwnProperty('profileCompatibility'), 'has a profileCompatibility property')
+  t.ok(avcC.hasOwnProperty('levelIndication'), 'has a levelIndication property')
+
+  t.equals(avcC.version, 1, 'version property correct')
+  t.equals(avcC.profile, 66, 'profile property correct')
+  t.equals(avcC.profileCompatibility, 0, 'profileCompatibility property correct')
+  t.equals(avcC.levelIndication, 30, 'levelIndication property correct')
+
+  console.log(avcC)
+})

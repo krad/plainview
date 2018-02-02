@@ -82,7 +82,12 @@ var parseCOLR = function(atom, payload) {
 }
 
 var parseAVCC = function(atom, payload) {
-  // console.log('parseAVCC')
+  var view                  = new DataView(payload.buffer, 0, 4)
+  atom.version              = view.getUint8(0)
+  atom.profile              = view.getUint8(1)
+  atom.profileCompatibility = view.getUint8(2)
+  atom.levelIndication      = view.getUint8(3)
+
 }
 
 var parseAVC1 = function(atom, payload) {
