@@ -125,6 +125,18 @@ AtomTree.prototype.insert = function(atom) {
 
 
 /**
+ * AtomTree.prototype.findAtoms - Finds atoms by name
+ *
+ * @param  {String} atomName The name of all the atoms you want to find
+ * @return {Array<Atom>}     An array of atoms with the name searched for
+ */
+AtomTree.prototype.findAtoms = function(atomName) {
+  return this.root.flatMap(function(e) { return explode(e) })
+  .filter(function(e) { if (e.name == atomName) { return e } })
+}
+
+
+/**
  * explode - Used to recursively unwrap an Atom's children into a flat array
  *
  * @param  {Atom} atom An Atom object with children
