@@ -247,7 +247,6 @@ function parseCodecs(tree) {
         }
       }
     }
-
   }
 
   return result

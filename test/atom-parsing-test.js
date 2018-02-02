@@ -130,7 +130,7 @@ test('that we can parse esds components', t=>{
 
   var audioSpecificConfig = esds.audioSpecificConfig
   t.ok(audioSpecificConfig.hasOwnProperty('type'), 'has type')
-  t.equals(2, audioSpecificConfig.type)
+  t.equals(2, audioSpecificConfig.type, 'audio specific config type is correct')
 
 })
 
