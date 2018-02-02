@@ -62,6 +62,8 @@ test('that we can find atoms by name', t=> {
   atoms = parsed.findAtoms('trex')
   t.ok(atoms, 'found atoms')
   t.equals(2, atoms.length, 'found the correct amount of trexs')
+
+  console.log(atoms)
 })
 
 // test('that can parse avc1 components', t=> {
