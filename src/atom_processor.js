@@ -81,13 +81,19 @@ var parseCOLR = function(atom, payload) {
   // console.log('parseCOLR')
 }
 
+
+/**
+ * var parseAVCC - Parses an 'avcC' type atom
+ *
+ * @param  {Atom} atom    An 'avcC' type atom
+ * @param  {type} payload Uint8 array of atom data starting AFTER the 4 byte atom name
+ */
 var parseAVCC = function(atom, payload) {
   var view                  = new DataView(payload.buffer, 0, 4)
   atom.version              = view.getUint8(0)
   atom.profile              = view.getUint8(1)
   atom.profileCompatibility = view.getUint8(2)
   atom.levelIndication      = view.getUint8(3)
-
 }
 
 var parseAVC1 = function(atom, payload) {

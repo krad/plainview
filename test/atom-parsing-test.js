@@ -1,6 +1,6 @@
 var test   = require('tape')
 var fs     = require('fs')
-var parser = require('../atoms')
+var parser = require('../src/atoms')
 
 var mockBuffer  = fs.readFileSync('./test/fileSeq0.mp4')
 var mock        = new Uint8Array(mockBuffer)
@@ -28,7 +28,7 @@ test('that we can parse atoms from a segment', t=> {
   console.log(root)
 })
 
-test('that can parse ftyp components', t=> {
+test('that we can parse ftyp components', t=> {
   t.plan(10)
 
   var parsed = parser(mock)
@@ -66,7 +66,7 @@ test('that we can find atoms by name', t=> {
   console.log(atoms)
 })
 
-test('that can parse avc1 components', t=> {
+test('that we can parse avc1 components', t=> {
   t.plan(7)
   var parsed = parser(mock)
   t.ok(parsed, 'parsed init segment')
@@ -81,11 +81,12 @@ test('that can parse avc1 components', t=> {
 
   t.equals(avc1.width, 480, 'width value was correct')
   t.equals(avc1.height, 272, 'height value was correct')
+
   console.log(avc1)
 })
 
 
-test('that can parse avcC components', t=> {
+test('that we can parse avcC components', t=> {
   t.plan(11)
 
   var parsed = parser(mock)
@@ -107,4 +108,16 @@ test('that can parse avcC components', t=> {
   t.equals(avcC.levelIndication, 30, 'levelIndication property correct')
 
   console.log(avcC)
+})
+
+test('top level information in the tree', t=> {
+  t.plan(4)
+
+  var parsed = parser(mock)
+  t.ok(parsed, 'parsed init segment')
+  t.ok(parsed.hasOwnProperty('codecs'), 'has codecs property')
+  t.ok(parsed.codecs, 'codecs are present')
+  t.equals(parsed.codecs[0], 'avc1.42001E', 'created codec string properly')
+
+  console.log(parsed.codecs)
 })

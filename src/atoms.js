@@ -187,6 +187,49 @@ function isAtom(a) {
   return a instanceof Atom && a.constructor === Atom;
 }
 
+
+
+/**
+ * parseCodecs - Parses an AtomTree for codec information from any audio and/or video tracks
+ * Video:
+ *  We only support avc1 atoms at this time.  This respects proper profile, level parsing.
+ *
+ * Audio:
+ *  Support coming soon...
+ *
+ * @param  {AtomTree} tree A tree representing the parsed contents of an mpeg file
+ * @return {Array<String>} An array of codec strings (RFC6381)
+ */
+function parseCodecs(tree) {
+  var result
+
+  var videoScan = tree.findAtoms('avc1')
+  if (videoScan && videoScan.length > 0) {
+    var avc1 = videoScan[0]
+
+    if (avc1.children && avc1.children.length > 0) {
+      var profileScan = avc1.children.filter(function(e) { if (e.name == 'avcC') { return e } })
+      if (profileScan && profileScan.length > 0) {
+        var avcC = profileScan[0]
+        if (avcC) {
+          if (!result) { result = [] }
+
+          var params = [avcC.profile,
+                        avcC.profileCompatibility,
+                        avcC.levelIndication].map(function(i) {
+                          return ('0' + i.toString(16).toUpperCase()).slice(-2)
+                        }).join('');
+
+          var codec = "avc1." + params
+          result.push(codec)
+        }
+      }
+    }
+  }
+
+  return result
+}
+
 /**
  * parseAtoms - Method to parse an mpeg file
  *
@@ -217,6 +260,8 @@ module.exports = function parseAtoms(arraybuffer) {
 
     cursor += 1
   }
+
+  tree.codecs = parseCodecs(tree)
 
   return tree
 }

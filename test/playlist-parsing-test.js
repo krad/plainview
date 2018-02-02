@@ -1,6 +1,6 @@
 var test      = require('tape')
 var fs        = require('fs')
-var plainview = require('../')
+var plainview = require('../src/')
 
 test('that we can parse a m3u8 playlist', t=> {
   t.plan(16)
