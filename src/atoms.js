@@ -233,6 +233,20 @@ function parseCodecs(tree) {
 
   var audioScan = tree.findAtoms('mp4a')
   if (audioScan && audioScan.length > 0) {
+    var mp4a = audioScan[0]
+
+    if (mp4a.children && mp4a.children.length > 0) {
+      var audioConfScan = mp4a.children.filter(function(e) { if (e.name == 'esds') { return e } })
+      if (audioConfScan && audioConfScan.length > 0) {
+        var esds = audioConfScan[0]
+        if (esds && esds.audioSpecificConfig) {
+          if (!result)  { result = [] }
+          var params = [esds.objectProfileIndication, esds.audioSpecificConfig.type].map(function(e){ return e.toString(16) }).join('.')
+          var codec  = 'mp4a.' + params
+          result.push(codec)
+        }
+      }
+    }
 
   }
 
