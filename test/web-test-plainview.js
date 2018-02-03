@@ -26,13 +26,11 @@ test('that we can setup a plainview object', t=> {
   t.ok(pv, 'was able to create an object')
   t.ok(pv.player, 'found the player tag')
   t.ok(pv.playlistURL, 'found the playlistURL')
-  t.ok('http://fake.host/vod.m3u8', pv.playlistURL, 'found the playlistURL')
 
-  t.timeoutAfter(5000)
+  t.timeoutAfter(1000)
   pv.setup(function(err){
     t.ok(1, 'player setup')
     t.notOk(err, 'no error produced.  good')
-
     t.ok(pv.parsedPlaylist, 'parsed playlist is present')
   })
 

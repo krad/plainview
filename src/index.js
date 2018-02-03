@@ -30,8 +30,17 @@ function setupPlayer(plainview, playerID) {
 }
 
 Plainview.prototype.setup = function(cb) {
+  var pv = this
   if (this.playlistURL) {
     this._bofh.get(this.playlistURL, function(res, err) {
+      if (!err) {
+        var decoder         = new TextDecoder();
+        var playlistStr     = decoder.decode(res)
+        var parsedPlaylist  = playlist(playlistStr)
+        if (parsedPlaylist.info) {
+          pv.parsedPlaylist = parsedPlaylist
+        }
+      }
       cb(err)
     })
   }
