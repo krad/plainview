@@ -2,7 +2,7 @@ var test   = require('tape')
 var fs     = require('fs')
 var parser = require('../src/atoms')
 
-var mockBuffer  = fs.readFileSync('./test/fileSeq0.mp4')
+var mockBuffer  = fs.readFileSync('./test/fixtures/fileSeq0.mp4')
 var mock        = new Uint8Array(mockBuffer)
 
 test('that we can parse atoms from a segment', t=> {

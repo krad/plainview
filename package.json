@@ -6,7 +6,7 @@
   "scripts": {
     "test": "tape test/**/*-test.js | tap-spec",
     "autotest": "tape-watch test/**/*-test.js | tap-spec",
-    "webtest": "browserify test/web-test-*.js | tape-run render='tap-spec' | tap-spec"
+    "webtest": "browserify test/web-test-*.js | tape-run --static='./test/fixtures'| tap-spec"
   },
   "author": "iam@krad.io",
   "license": "MIT",

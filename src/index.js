@@ -7,19 +7,34 @@ var playlist = require('./playlist')
 var atoms    = require('./atoms')
 var bofh     = require('./bofh')
 
-function Plainview() { }
+function Plainview(playerID) {
+  if (playerID) { setupPlayer(this, playerID) }
+  this._bofh = new bofh.BOFH()
+}
 
-Plainview.prototype.setup = function(player, playlist, options) {
+function setupPlayer(plainview, playerID) {
+  var player = document.getElementById(playerID)
   if (player) {
-    if (playlist) {
-    } else {
-      throw 'Please specify a playlist url'      
+    plainview.player = player
+    if (player.childNodes) {
+      for (var i = 0; i < player.childNodes.length; i++) {
+        var childNode = plainview.player.childNodes[i]
+        if (childNode.type && childNode.src) {
+          if (childNode.type == 'application/x-mpegURL' || childNode.type == 'vnd.apple.mpegURL') {
+            plainview.playlistURL = childNode.src
+          }
+        }
+      }
     }
-  } else {
-      throw 'Please set a video tag'
   }
 }
 
-module.exports = {
-  Plainview: Plainview
+Plainview.prototype.setup = function(cb) {
+  if (this.playlistURL) {
+    this._bofh.get(this.playlistURL, function(res, err) {
+      cb(err)
+    })
+  }
 }
+
+module.exports = {Plainview: Plainview}

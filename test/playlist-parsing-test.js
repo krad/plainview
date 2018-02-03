@@ -4,7 +4,7 @@ var playlist  = require('../src/playlist')
 
 test('that we can parse a m3u8 playlist', t=> {
   t.plan(16)
-  var mock = fs.readFileSync('./test/vod.m3u8').toString()
+  var mock = fs.readFileSync('./test/fixtures/vod.m3u8').toString()
   var parsed = playlist(mock)
   t.ok(parsed, 'parsed mock')
 

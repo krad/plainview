@@ -18,7 +18,7 @@ test('test that we can mock request/responses', t=> {
   MockHttpRequest.prototype.send = function() {
     t.ok(1, 'called send')
     if (this.url) {
-      var path        = './test/' + this.url
+      var path        = './test/fixtures/' + this.url
       var mockBuffer  = fs.readFileSync(path)
       var mock        = new Uint8Array(mockBuffer)
       this.response   = mock
@@ -29,7 +29,7 @@ test('test that we can mock request/responses', t=> {
   }
 
   t.timeoutAfter(1000)
-  bofh.get('http://fake.host/fileSeq1.mp4', function(data){
+  bofh.get('/fileSeq1.mp4', function(data){
     t.ok(data, 'got data back')
   })
 
