@@ -252,6 +252,10 @@ function parseCodecs(tree) {
   return result
 }
 
+function createCodecsString(codecs) {
+  return 'video/mp4; codecs="' + codecs.join(',') + '"'
+}
+
 /**
  * parseAtoms - Method to parse an mpeg file
  *
@@ -284,6 +288,9 @@ module.exports = function parseAtoms(arraybuffer) {
   }
 
   tree.codecs = parseCodecs(tree)
+  if (tree.codecs) {
+    tree.codecsString = createCodecsString(tree.codecs)
+  }
 
   return tree
 }

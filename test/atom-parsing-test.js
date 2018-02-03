@@ -135,7 +135,7 @@ test('that we can parse esds components', t=>{
 })
 
 test('that we can get codec information out of a tree', t=> {
-  t.plan(6)
+  t.plan(8)
 
   var parsed = parser(mock)
   t.ok(parsed, 'parsed init segment')
@@ -146,6 +146,9 @@ test('that we can get codec information out of a tree', t=> {
 
   t.equals(parsed.codecs[0], 'avc1.42001E', 'video codec string is correct')
   t.equals(parsed.codecs[1], 'mp4a.40.2', 'audio codec string is correct')
+
+  t.ok(parsed.hasOwnProperty('codecsString'), 'has a codecs string property')
+  t.equals(parsed.codecsString, 'video/mp4; codecs="avc1.42001E,mp4a.40.2"')
 
   console.log(parsed.codecs)
 })

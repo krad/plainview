@@ -19,7 +19,7 @@ test('that we can setup the document contents', t=> {
 })
 
 test('that we can setup a plainview object', t=> {
-  t.plan(6)
+  t.plan(8)
   document.body.innerHTML = html
 
   var pv = new plainview.Plainview('player')
@@ -28,10 +28,12 @@ test('that we can setup a plainview object', t=> {
   t.ok(pv.playlistURL, 'found the playlistURL')
 
   t.timeoutAfter(1000)
+  t.notOk(pv.player.src, 'player did NOT have a source yet. good.')
   pv.setup(function(err){
     t.ok(1, 'player setup')
     t.notOk(err, 'no error produced.  good')
     t.ok(pv.parsedPlaylist, 'parsed playlist is present')
+    t.ok(pv.player.src, 'media source is present on player now.  good.')
   })
 
 })
