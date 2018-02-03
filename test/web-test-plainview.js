@@ -32,6 +32,8 @@ test('that we can setup a plainview object', t=> {
   pv.setup(function(err){
     t.ok(1, 'player setup')
     t.notOk(err, 'no error produced.  good')
+
+    t.ok(pv.parsedPlaylist, 'parsed playlist is present')
   })
 
 })
