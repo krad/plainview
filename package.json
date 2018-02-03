@@ -4,8 +4,9 @@
   "description": "An m3u8 (HLS playlist) and mp4 parser",
   "main": "index.js",
   "scripts": {
-    "test": "tape test/**/*-test.js | tap-spec",
+    "test": "set -e; npm run nodetest; npm run webtest",
     "autotest": "tape-watch test/**/*-test.js | tap-spec",
+    "nodetest": "tape test/**/*-test.js | tap-spec",
     "webtest": "browserify test/web-test-*.js | tape-run --static='./test/fixtures'| tap-spec"
   },
   "author": "iam@krad.io",
