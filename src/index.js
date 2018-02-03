@@ -29,14 +29,23 @@ function setupPlayer(plainview, playerID) {
   }
 }
 
-function createSourceBuffer(plainview) {
+function createSourceBuffer(plainview, segment, cb) {
   if (window.MediaSource) {
-    var ms = new MediaSource()
-    if (plainview.player) {
-      plainview.player.src   = window.URL.createObjectURL(ms)
-      // plainview.sourceBuffer = ms.addSourceBuffer()
-    }
-  }
+    if (segment.codecsString) {
+      if (MediaSource.isTypeSupported(segment.codecsString)) {
+        var ms = new MediaSource()
+        if (plainview.player) {
+          var codecs = segment.codecsString
+          ms.addEventListener('sourceopen', function(e){
+            plainview.sourceBuffer = ms.addSourceBuffer(codecs)
+            cb(null)
+          })
+          plainview.player.src = window.URL.createObjectURL(ms)
+          return
+        }
+      } else { cb('Media format not supported' + segment.codecsString) }
+    } else { cb('Segment has no media codecs defined') }
+  } else { cb('MediaSource not present') }
 }
 
 function fetchAndParsePlaylist(client, url, cb) {
@@ -55,11 +64,14 @@ function fetchAndParsePlaylist(client, url, cb) {
 }
 
 function fetchAndParseSegment(client, url, cb) {
-  client.get(url, function(ress, err){
+  client.get(url, function(res, err){
     if (!err) {
-
+      var uint8buffer = new Uint8Array(res)
+      var tree        = atomPaser(uint8buffer)
+      cb(uint8buffer, tree, null)
+      return
     }
-    cb(null, err)
+    cb(null, null, err)
   })
 }
 
@@ -69,7 +81,6 @@ Plainview.prototype.setup = function(cb) {
     fetchAndParsePlaylist(this._bofh, this.playlistURL, function(playlist, err){
       if (playlist) {
         pv.parsedPlaylist = playlist
-        createSourceBuffer(pv)
         cb()
         return
       }
@@ -77,6 +88,29 @@ Plainview.prototype.setup = function(cb) {
       cb(err)
     })
   }
+}
+
+Plainview.prototype.configureMedia = function(cb) {
+  var pv = this
+  if (pv.parsedPlaylist) {
+    if (pv.parsedPlaylist.segments) {
+      var segments = pv.parsedPlaylist.segments.filter(function(s) { if(s.isIndex) { return s }})
+      if (segments.length > 0) {
+        var segment = segments[0]
+        fetchAndParseSegment(pv._bofh, segment.url, function(_, tree, err){
+          if (err) {
+            cb(err)
+            return
+          }
+          createSourceBuffer(pv, tree, function(err){
+            cb(err)
+          })
+          return
+        })
+        return
+      } else { cb('Init Segment not present') }
+    } else { cb('Playlist has no segments') }
+  } else { cb('Playlist not present') }
 }
 
 module.exports = {Plainview: Plainview}

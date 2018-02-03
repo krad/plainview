@@ -264,7 +264,6 @@ function createCodecsString(codecs) {
  */
 module.exports = function parseAtoms(arraybuffer) {
   var cursor = 0;
-
   var tree = new AtomTree()
   while (cursor <= arraybuffer.length) {
 
@@ -277,7 +276,7 @@ module.exports = function parseAtoms(arraybuffer) {
       var atomSize  = view.getUint32(0)
 
       var payload = arraybuffer.slice(cursor+4, (cursor+atomSize)-4)
-      var atom = new Atom(atomName, cursor-4, atomSize, payload)
+      var atom    = new Atom(atomName, cursor-4, atomSize, payload)
       tree.insert(atom)
 
       cursor += 4

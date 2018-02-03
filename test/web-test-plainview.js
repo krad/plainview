@@ -18,11 +18,12 @@ test('that we can setup the document contents', t=> {
   t.ok(document.getElementById('player'), 'found the player')
 })
 
+var pv
 test('that we can setup a plainview object', t=> {
-  t.plan(8)
+  t.plan(7)
   document.body.innerHTML = html
 
-  var pv = new plainview.Plainview('player')
+  pv = new plainview.Plainview('player')
   t.ok(pv, 'was able to create an object')
   t.ok(pv.player, 'found the player tag')
   t.ok(pv.playlistURL, 'found the playlistURL')
@@ -33,7 +34,21 @@ test('that we can setup a plainview object', t=> {
     t.ok(1, 'player setup')
     t.notOk(err, 'no error produced.  good')
     t.ok(pv.parsedPlaylist, 'parsed playlist is present')
-    t.ok(pv.player.src, 'media source is present on player now.  good.')
   })
+})
 
+test('that we can configureMedia', t=> {
+  t.plan(6)
+
+  t.ok(pv, 'plainview object present')
+  t.ok(pv.player, 'player present')
+  t.notOk(pv.player.src, 'player source not present')
+  t.ok(pv.parsedPlaylist, 'parsed playlist is present')
+
+  t.timeoutAfter(1000)
+  pv.configureMedia(function(err){
+    if (err) { t.fail("Error fetching segment") }
+    t.ok('player started', 'got player callback')
+    t.ok(pv.sourceBuffer, 'source buffer present')
+  })
 })
