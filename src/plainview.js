@@ -29,7 +29,7 @@ function setupPlayer(plainview, playerID) {
   }
 }
 
-function createSourceBuffer(plainview, segment, cb) {
+function createSourceBuffer(plainview, payload, segment, cb) {
   if (window.MediaSource) {
     if (segment.codecsString) {
       if (MediaSource.isTypeSupported(segment.codecsString)) {
@@ -37,7 +37,9 @@ function createSourceBuffer(plainview, segment, cb) {
         if (plainview.player) {
           var codecs = segment.codecsString
           ms.addEventListener('sourceopen', function(e){
-            plainview.sourceBuffer = ms.addSourceBuffer(codecs)
+            _ = ms.addSourceBuffer(codecs)
+            ms.sourceBuffers[0].appendBuffer(payload);
+            plainview.mediaSource = ms
             cb(null)
           })
           plainview.player.src = window.URL.createObjectURL(ms)
@@ -48,6 +50,15 @@ function createSourceBuffer(plainview, segment, cb) {
   } else { cb('MediaSource not present') }
 }
 
+
+/**
+ * fetchAndParsePlaylist - Fetches a m3u8 playlist from a url and parses it
+ *
+ * @param  {BOFH} client Client used to make the GET request through
+ * @param  {String} url  URL of the media segment
+ * @param  {Function} cb Callback used on complete.  Contains a parsedPlaylist and/or err
+ */
+
 function fetchAndParsePlaylist(client, url, cb) {
   client.get(url, function(res, err){
     if (!err) {
@@ -55,7 +66,7 @@ function fetchAndParsePlaylist(client, url, cb) {
       var playlistStr     = decoder.decode(res)
       var parsedPlaylist  = playlist(playlistStr)
       if (parsedPlaylist.info) {
-        cb(parsedPlaylist)
+        cb(parsedPlaylist, null)
         return
       }
     }
@@ -63,6 +74,13 @@ function fetchAndParsePlaylist(client, url, cb) {
   })
 }
 
+/**
+ * fetchAndParseSegment - Fetches a media segment from a URL and runs it through the atom parser
+ *
+ * @param  {BOFH} client Client used to make the GET request through
+ * @param  {String} url  URL of the media segment
+ * @param  {Function} cb Callback used on complete.  Contains Uint8Array, parsed atom, error
+ */
 function fetchAndParseSegment(client, url, cb) {
   client.get(url, function(res, err){
     if (!err) {
@@ -74,6 +92,7 @@ function fetchAndParseSegment(client, url, cb) {
     cb(null, null, err)
   })
 }
+
 
 Plainview.prototype.setup = function(cb) {
   var pv = this
@@ -90,6 +109,16 @@ Plainview.prototype.setup = function(cb) {
   }
 }
 
+
+/**
+ * Plainview.prototype.configureMedia - Configures the player using media info form actual a/v stream
+ * Does this by fetching the first init segment from a parsed playlist, parsing it's atoms, and
+ * then creating a MediaSource and SourceBuffer based on it's codecs information.
+ *
+ * Appends the init segment to the source buffer on success and is ready for the actual data segments
+ *
+ * @param  {Function} cb Callback that gets executed when configureMedia is complete
+ */
 Plainview.prototype.configureMedia = function(cb) {
   var pv = this
   if (pv.parsedPlaylist) {
@@ -97,20 +126,86 @@ Plainview.prototype.configureMedia = function(cb) {
       var segments = pv.parsedPlaylist.segments.filter(function(s) { if(s.isIndex) { return s }})
       if (segments.length > 0) {
         var segment = segments[0]
-        fetchAndParseSegment(pv._bofh, segment.url, function(_, tree, err){
+        fetchAndParseSegment(pv._bofh, segment.url, function(payload, tree, err){
           if (err) {
             cb(err)
             return
           }
-          createSourceBuffer(pv, tree, function(err){
+
+          createSourceBuffer(pv, payload, tree, function(err){
+            pv.currentSegmentIndex = segments.indexOf(segment)
             cb(err)
           })
           return
         })
         return
-      } else { cb('Init Segment not present') }
+      } else { cb('Initialization Segment not present') }
     } else { cb('Playlist has no segments') }
   } else { cb('Playlist not present') }
 }
 
+// TODO: Replace with iterator once we prove this works
+function nextSegment(pv) {
+  if (pv.parsedPlaylist) {
+    if (pv.parsedPlaylist.segments) {
+      if (typeof pv.currentSegmentIndex == 'number') {
+        var nextIndex = pv.currentSegmentIndex + 1
+        if (pv.parsedPlaylist.segments.length >= nextIndex) {
+          return [nextIndex, pv.parsedPlaylist.segments[nextIndex]]
+        }
+      }
+    }
+  }
+
+  return null
+}
+
+function startPlaying(pv, cb) {
+  var ms = pv.mediaSource
+  if (ms) {
+
+    var next = nextSegment(pv)
+    if (next) {
+      var nextIdx = next[0]
+      var segment = next[1]
+      fetchAndParseSegment(pv._bofh, segment.url, function(payload, atom, err) {
+        if (err) { cb(err); return }
+        pv.currentSegmentIndex = nextIdx
+        cb(null)
+      })
+    }
+
+    pv.player.play()
+
+  } else { cb('MediaSource not present') }
+}
+
+Plainview.prototype.play = function(cb) {
+  if (this.mediaSource) {
+    startPlaying(this, function(e){ cb(e) })
+  } else {
+
+    var pv = this
+    pv.setup(function(err) {
+      if (err) {
+        cb(err)
+        return
+      }
+
+      pv.configureMedia(function(err){
+        if (err) {
+          cb(err)
+          return
+        }
+
+        startPlaying(pv, function(e){
+          cb(e)
+        })
+        return
+      })
+    })
+  }
+}
+
+exports.Plainview = Plainview
 module.exports = {Plainview: Plainview}

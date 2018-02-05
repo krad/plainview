@@ -1,5 +1,5 @@
 var test      = require('tape')
-var plainview = require('../src/index')
+var plainview = require('../src/plainview')
 
 var html = `
 <html>
@@ -38,17 +38,38 @@ test('that we can setup a plainview object', t=> {
 })
 
 test('that we can configureMedia', t=> {
-  t.plan(6)
+  t.plan(8)
 
   t.ok(pv, 'plainview object present')
   t.ok(pv.player, 'player present')
   t.notOk(pv.player.src, 'player source not present')
   t.ok(pv.parsedPlaylist, 'parsed playlist is present')
+  t.notOk(pv.currentSegmentIndex, 'player should not have a currentSegmentIndex')
 
   t.timeoutAfter(1000)
   pv.configureMedia(function(err){
     if (err) { t.fail("Error fetching segment") }
     t.ok('player started', 'got player callback')
-    t.ok(pv.sourceBuffer, 'source buffer present')
+    t.ok(pv.mediaSource, 'mediaSource present')
+    t.equals(pv.currentSegmentIndex, 0, 'correct media segment set')
   })
+})
+
+test('that we can play', t=> {
+  t.plan(7)
+  document.body.innerHTML = html
+
+  var pvv = new plainview.Plainview('player')
+  t.ok(pvv, 'was able to create an object')
+  t.ok(pvv.player, 'found the player tag')
+  t.ok(pvv.playlistURL, 'found the playlistURL')
+  t.notOk(pvv.player.src, 'player did NOT have a source yet. good.')
+
+  t.timeoutAfter(2000)
+  pvv.play(function(err){
+    t.notOk(err, 'there was an error')
+    t.ok(1, 'we started playing')
+    t.equals(1, pvv.currentSegmentIndex, 'currentSegmentIndex was updated')
+  })
+
 })
