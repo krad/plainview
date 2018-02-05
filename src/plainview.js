@@ -60,6 +60,7 @@ function createSourceBuffer(plainview, payload, segment, cb) {
  */
 
 function fetchAndParsePlaylist(client, url, cb) {
+  console.log("Fetching: ", url)
   client.get(url, function(res, err){
     if (!err) {
       var decoder         = new TextDecoder();
@@ -91,6 +92,7 @@ function fetchAndParsePlaylist(client, url, cb) {
  * @param  {Function} cb Callback used on complete.  Contains Uint8Array, parsed atom, error
  */
 function fetchAndParseSegment(client, url, cb) {
+  console.log("Fetching: ", url)
   client.get(url, function(res, err){
     if (!err) {
       var uint8buffer = new Uint8Array(res)
@@ -112,7 +114,6 @@ Plainview.prototype.setup = function(cb) {
         cb()
         return
       }
-
       cb(err)
     })
   }
@@ -172,24 +173,36 @@ function nextSegment(pv) {
 function startPlaying(pv, cb) {
   var ms = pv.mediaSource
   if (ms) {
-
-    var next = nextSegment(pv)
-    if (next) {
-      var nextIdx = next[0]
-      var segment = next[1]
-      fetchAndParseSegment(pv._bofh, segment.url, function(payload, atom, err) {
-        if (err) { cb(err); return }
-
-        console.log(atom);
-        var buffer = new Uint8Array(payload)
-        pv.mediaSource.sourceBuffers[0].appendBuffer(buffer)
-        pv.currentSegmentIndex = nextIdx
-        pv.player.play()
-        cb(null)
-      })
-    }
+    loadNextSegment(pv, function(e) {
+      if (!e) {
+        cb(null);
+        startPlaying(pv);
+      } else {
+        console.log('failed in recursive play');
+      }
+    })
 
   } else { cb('MediaSource not present') }
+}
+
+function loadNextSegment(pv, cb) {
+  console.log('Loading next segment...');
+  var next = nextSegment(pv)
+  if (next) {
+    var nextIdx = next[0]
+    var segment = next[1]
+    fetchAndParseSegment(pv._bofh, segment.url, function(payload, atom, err) {
+      if (err) { cb(err); return }
+
+      var buffer = new Uint8Array(payload)
+      console.log(pv.player.error);
+      pv.mediaSource.sourceBuffers[0].appendBuffer(buffer)
+      pv.currentSegmentIndex = nextIdx
+      cb(null)
+    })
+  } else {
+    console.log('No next segment.');
+  }
 }
 
 Plainview.prototype.play = function(cb) {
@@ -199,23 +212,26 @@ Plainview.prototype.play = function(cb) {
 
     var pv = this
     pv.setup(function(err) {
-      console.log('setup');
       if (err) {
         cb(err)
         return
       }
 
       pv.configureMedia(function(err){
-        console.log('configured');
         if (err) {
           cb(err)
           return
         }
 
+        var duration = pv.parsedPlaylist.segments
+        .filter(function(s) { if (!s.isIndex) { return s }})
+        .map(function(s) { return s.duration })
+        .reduce(function(a, c) { return a + c })
+
         startPlaying(pv, function(e){
-          console.log('start playing');
           cb(e)
         })
+
         return
       })
     })
