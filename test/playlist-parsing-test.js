@@ -1,11 +1,12 @@
 var test      = require('tape')
 var fs        = require('fs')
-var plainview = require('../src/')
+var playlist  = require('../src/playlist')
+
+var mock = fs.readFileSync('./test/fixtures/vod.m3u8').toString()
 
 test('that we can parse a m3u8 playlist', t=> {
   t.plan(16)
-  var mock = fs.readFileSync('./test/vod.m3u8').toString()
-  var parsed = plainview.parseM3U8(mock)
+  var parsed = playlist(mock)
   t.ok(parsed, 'parsed mock')
 
   t.ok(parsed.hasOwnProperty('info'), 'has playlist info')
@@ -28,4 +29,34 @@ test('that we can parse a m3u8 playlist', t=> {
   t.equal(5.00518475,  parsed.segments[5].duration, 'segment duration correct')
 
   console.log(parsed)
+})
+
+test('that we can prefix segment urls with urls', t=> {
+  t.plan(13)
+  var parsed = playlist(mock, 'https://krad.tv/test-playlist/')
+  t.ok(parsed, 'parsed mock')
+
+  var segments = parsed.segments
+  t.ok(segments, 'segments present')
+  t.equals(segments[0].url, 'https://krad.tv/test-playlist/fileSeq0.mp4', 'prefixed the url properly')
+  t.equals(segments[1].url, 'https://krad.tv/test-playlist/fileSeq1.mp4', 'prefixed the url properly')
+
+  parsed = playlist(mock, 'https://krad.tv/test-playlist')
+  t.ok(parsed, 'parsed mock')
+  segments = parsed.segments
+  t.ok(segments, 'segments present')
+  t.equals(segments[0].url, 'https://krad.tv/test-playlist/fileSeq0.mp4', 'prefixed the url properly')
+
+  parsed = playlist(mock, 'https://krad.tv/')
+  t.ok(parsed, 'parsed mock')
+  segments = parsed.segments
+  t.ok(segments, 'segments present')
+  t.equals(segments[0].url, 'https://krad.tv/fileSeq0.mp4', 'prefixed the url properly')
+
+  parsed = playlist(mock, 'https://krad.tv')
+  t.ok(parsed, 'parsed mock')
+  segments = parsed.segments
+  t.ok(segments, 'segments present')
+  t.equals(segments[0].url, 'https://krad.tv/fileSeq0.mp4', 'prefixed the url properly')
+
 })

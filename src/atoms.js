@@ -1,7 +1,7 @@
 /**
 *  @file Atom parsing
 *  @author krad.io <iam@krad.io>
-*  @version 0.1
+*  @version 0.0.2
 **/
 var atomProcessor = require('./atom_processor')
 
@@ -247,10 +247,13 @@ function parseCodecs(tree) {
         }
       }
     }
-
   }
 
   return result
+}
+
+function createCodecsString(codecs) {
+  return 'video/mp4; codecs="' + codecs.join(',') + '"'
 }
 
 /**
@@ -261,7 +264,6 @@ function parseCodecs(tree) {
  */
 module.exports = function parseAtoms(arraybuffer) {
   var cursor = 0;
-
   var tree = new AtomTree()
   while (cursor <= arraybuffer.length) {
 
@@ -274,7 +276,7 @@ module.exports = function parseAtoms(arraybuffer) {
       var atomSize  = view.getUint32(0)
 
       var payload = arraybuffer.slice(cursor+4, (cursor+atomSize)-4)
-      var atom = new Atom(atomName, cursor-4, atomSize, payload)
+      var atom    = new Atom(atomName, cursor-4, atomSize, payload)
       tree.insert(atom)
 
       cursor += 4
@@ -284,7 +286,11 @@ module.exports = function parseAtoms(arraybuffer) {
     cursor += 1
   }
 
-  tree.codecs = parseCodecs(tree)
+  var parsedCodecs = parseCodecs(tree)
+  if (parsedCodecs) {
+    tree.codecs = parsedCodecs
+    tree.codecsString = createCodecsString(tree.codecs)
+  }
 
   return tree
 }

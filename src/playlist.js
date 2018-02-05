@@ -1,3 +1,5 @@
+const url = require('url');
+
 var INFO_MATCH_PATTERNS = {
   targetDuration: new RegExp(/#EXT-X-TARGETDURATION:(\d+)/),
   version: new RegExp(/#EXT-X-VERSION:(\d+)/),
@@ -40,7 +42,7 @@ var setInfoFor = function(result, lines) {
   if (info) { result['info'] = info }
 }
 
-var getSegmentsFrom = function(lines) {
+var getSegmentsFrom = function(lines, srcURL) {
   var result
   var lastDuration = ""
   for (var i = 0; i < lines.length; i++) {
@@ -53,12 +55,25 @@ var getSegmentsFrom = function(lines) {
           if (matches[1]) {
             if (!result) { result = [] }
 
+            /// If a srcURL is present we should prefix the segment urls with it
+            var segmentURL
+            if (srcURL) {
+              if (!srcURL.endsWith('/')) {
+                srcURL = srcURL += '/'
+              }
+              var fullPath = url.resolve(srcURL, matches[1])
+              segmentURL   = fullPath
+            }
+            else { segmentURL = matches[1] }
+
+            /// If it's a index/map segment
             if (property == 'index') {
-              result.push({url: matches[1], isIndex: true})
+              result.push({url: segmentURL, isIndex: true})
             }
 
+            /// If it's a media segment
             if (property == 'segment') {
-              var segment = {url: matches[1], isIndex: false}
+              var segment = {url: segmentURL, isIndex: false}
               if (lastDuration) {
                 var parsedDuration = parseFloat(lastDuration)
                 if (!parsedDuration.isNaN) { segment['duration'] = parsedDuration }
@@ -66,6 +81,7 @@ var getSegmentsFrom = function(lines) {
               result.push(segment)
             }
 
+            /// If this is a duration line, save it for the next loop
             if (property == 'duration') {
               lastDuration = matches[1]
             }
@@ -77,18 +93,18 @@ var getSegmentsFrom = function(lines) {
   return result
 }
 
-var setSegmentsFor = function(result, lines) {
-  var segments = getSegmentsFrom(lines)
+var setSegmentsFor = function(result, lines, srcURL) {
+  var segments = getSegmentsFrom(lines, srcURL)
   if (segments) { result['segments'] = segments }
 }
 
-module.exports = function parseM3U8(text) {
+module.exports = function parseM3U8(text, srcURL) {
   if (!text) throw Error('Missing playlist text')
   var result = {}
 
   var lines = text.split("\n")
   setInfoFor(result, lines)
-  setSegmentsFor(result, lines)
+  setSegmentsFor(result, lines, srcURL)
 
   return result
 }

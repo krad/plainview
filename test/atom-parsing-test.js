@@ -2,7 +2,7 @@ var test   = require('tape')
 var fs     = require('fs')
 var parser = require('../src/atoms')
 
-var mockBuffer  = fs.readFileSync('./test/fileSeq0.mp4')
+var mockBuffer  = fs.readFileSync('./test/fixtures/fileSeq0.mp4')
 var mock        = new Uint8Array(mockBuffer)
 
 test('that we can parse atoms from a segment', t=> {
@@ -130,12 +130,12 @@ test('that we can parse esds components', t=>{
 
   var audioSpecificConfig = esds.audioSpecificConfig
   t.ok(audioSpecificConfig.hasOwnProperty('type'), 'has type')
-  t.equals(2, audioSpecificConfig.type)
+  t.equals(2, audioSpecificConfig.type, 'audio specific config type is correct')
 
 })
 
 test('that we can get codec information out of a tree', t=> {
-  t.plan(6)
+  t.plan(8)
 
   var parsed = parser(mock)
   t.ok(parsed, 'parsed init segment')
@@ -146,6 +146,9 @@ test('that we can get codec information out of a tree', t=> {
 
   t.equals(parsed.codecs[0], 'avc1.42001E', 'video codec string is correct')
   t.equals(parsed.codecs[1], 'mp4a.40.2', 'audio codec string is correct')
+
+  t.ok(parsed.hasOwnProperty('codecsString'), 'has a codecs string property')
+  t.equals(parsed.codecsString, 'video/mp4; codecs="avc1.42001E,mp4a.40.2"')
 
   console.log(parsed.codecs)
 })
