@@ -20,7 +20,7 @@ test('that we can setup the document contents', t=> {
 
 var pv
 test('that we can setup a plainview object', t=> {
-  t.plan(7)
+  t.plan(10)
   document.body.innerHTML = html
 
   pv = new plainview.Plainview('player')
@@ -34,6 +34,13 @@ test('that we can setup a plainview object', t=> {
     t.ok(1, 'player setup')
     t.notOk(err, 'no error produced.  good')
     t.ok(pv.parsedPlaylist, 'parsed playlist is present')
+    t.ok(pv.playlistURL.startsWith('http://localhost'), 'playlist url has the host and proto prefixed on it')
+
+    var segments = pv.parsedPlaylist.segments
+    t.ok(segments, 'segments were present in playlist')
+
+    var urlCheck = new RegExp(/http:\/\/localhost:(\d+)\/fileSeq/)
+    t.ok(segments[0].url.match(urlCheck), 'segment url had host and proto prefixed')
   })
 })
 

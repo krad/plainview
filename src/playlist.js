@@ -55,6 +55,7 @@ var getSegmentsFrom = function(lines, srcURL) {
           if (matches[1]) {
             if (!result) { result = [] }
 
+            /// If a srcURL is present we should prefix the segment urls with it
             var segmentURL
             if (srcURL) {
               if (!srcURL.endsWith('/')) {
@@ -62,14 +63,15 @@ var getSegmentsFrom = function(lines, srcURL) {
               }
               var fullPath = url.resolve(srcURL, matches[1])
               segmentURL   = fullPath
-
             }
             else { segmentURL = matches[1] }
-            if (property == 'index') {
 
+            /// If it's a index/map segment
+            if (property == 'index') {
               result.push({url: segmentURL, isIndex: true})
             }
 
+            /// If it's a media segment
             if (property == 'segment') {
               var segment = {url: segmentURL, isIndex: false}
               if (lastDuration) {
@@ -79,6 +81,7 @@ var getSegmentsFrom = function(lines, srcURL) {
               result.push(segment)
             }
 
+            /// If this is a duration line, save it for the next loop
             if (property == 'duration') {
               lastDuration = matches[1]
             }

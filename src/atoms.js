@@ -286,8 +286,9 @@ module.exports = function parseAtoms(arraybuffer) {
     cursor += 1
   }
 
-  tree.codecs = parseCodecs(tree)
-  if (tree.codecs) {
+  var parsedCodecs = parseCodecs(tree)
+  if (parsedCodecs) {
+    tree.codecs = parsedCodecs
     tree.codecsString = createCodecsString(tree.codecs)
   }
 

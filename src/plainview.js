@@ -64,7 +64,16 @@ function fetchAndParsePlaylist(client, url, cb) {
     if (!err) {
       var decoder         = new TextDecoder();
       var playlistStr     = decoder.decode(res)
-      var parsedPlaylist  = playlist(playlistStr)
+
+      var srcURL
+      if (url.endsWith('m3u8')) {
+        var urlComps    = url.split('/')
+        var compsStrips = urlComps.slice(2, urlComps.length-1)
+        var hostAndPath = compsStrips.join('/')
+        srcURL          = urlComps[0] + '//' + hostAndPath
+      }
+
+      var parsedPlaylist  = playlist(playlistStr, srcURL)
       if (parsedPlaylist.info) {
         cb(parsedPlaylist, null)
         return
@@ -170,12 +179,15 @@ function startPlaying(pv, cb) {
       var segment = next[1]
       fetchAndParseSegment(pv._bofh, segment.url, function(payload, atom, err) {
         if (err) { cb(err); return }
+
+        console.log(atom);
+        var buffer = new Uint8Array(payload)
+        pv.mediaSource.sourceBuffers[0].appendBuffer(buffer)
         pv.currentSegmentIndex = nextIdx
+        pv.player.play()
         cb(null)
       })
     }
-
-    pv.player.play()
 
   } else { cb('MediaSource not present') }
 }
@@ -187,18 +199,21 @@ Plainview.prototype.play = function(cb) {
 
     var pv = this
     pv.setup(function(err) {
+      console.log('setup');
       if (err) {
         cb(err)
         return
       }
 
       pv.configureMedia(function(err){
+        console.log('configured');
         if (err) {
           cb(err)
           return
         }
 
         startPlaying(pv, function(e){
+          console.log('start playing');
           cb(e)
         })
         return
