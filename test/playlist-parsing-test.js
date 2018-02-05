@@ -5,7 +5,7 @@ var playlist  = require('../src/playlist')
 var mock = fs.readFileSync('./test/fixtures/vod.m3u8').toString()
 
 test('that we can parse a m3u8 playlist', t=> {
-  t.plan(18)
+  t.plan(17)
   var parsed = playlist(mock)
   t.ok(parsed, 'parsed mock')
 
@@ -16,20 +16,19 @@ test('that we can parse a m3u8 playlist', t=> {
   t.equals(parsed['info']['type'], "VOD", 'playlist type correct')
 
   t.ok(parsed.info.hasOwnProperty('duration'), 'has a duration')
-  t.equals(26.060363736, parsed['info']['duration'], 'duration was correct')
+  t.equals(21.02180154, parsed['info']['duration'], 'duration was correct')
 
   t.ok(parsed.hasOwnProperty('segments'), 'has segments')
   t.ok(Array.isArray(parsed.segments), 'segments is array')
-  t.equals(parsed.segments.length, 6, 'segment count is correct')
+  t.equals(parsed.segments.length, 5, 'segment count is correct')
 
   t.equals(true, parsed.segments[0].isIndex, 'first segment is index')
   t.equals(false, parsed.segments[1].isIndex, 'second segment is NOT index')
 
-  t.equal(6.039592488, parsed.segments[1].duration, 'segment duration correct')
-  t.equal(5.005198766, parsed.segments[2].duration, 'segment duration correct')
-  t.equal(5.005186063, parsed.segments[3].duration, 'segment duration correct')
-  t.equal(5.005201669, parsed.segments[4].duration, 'segment duration correct')
-  t.equal(5.00518475,  parsed.segments[5].duration, 'segment duration correct')
+  t.equal(6.006226722, parsed.segments[1].duration, 'segment duration correct')
+  t.equal(5.005193369, parsed.segments[2].duration, 'segment duration correct')
+  t.equal(5.005189734, parsed.segments[3].duration, 'segment duration correct')
+  t.equal(5.005191715, parsed.segments[4].duration, 'segment duration correct')
 
   console.log(parsed)
 })
@@ -65,7 +64,7 @@ test('that we can prefix segment urls with urls', t=> {
 })
 
 test('that we can interate over segments of the playlist', t=> {
-  t.plan(15)
+  t.plan(13)
 
   var pl = playlist(mock)
   t.ok(pl, 'created playlist')
@@ -92,10 +91,6 @@ test('that we can interate over segments of the playlist', t=> {
   segment = iterator.next()
   t.ok(segment, 'vended another segment')
   t.equals(segment.url, 'fileSeq4.mp4', 'url was for next segment')
-
-  segment = iterator.next()
-  t.ok(segment, 'vended another segment')
-  t.equals(segment.url, 'fileSeq5.mp4', 'url was for next segment')
 
   segment = iterator.next()
   t.notOk(segment, 'hit the end of the iterator')
