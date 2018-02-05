@@ -7,6 +7,7 @@ var playlist        = require('./playlist')
 var atomPaser       = require('./atoms')
 var bofh            = require('./bofh')
 var playerTemplate  = require('./player_template')
+var playlistFetcher = require('./playlist_fetcher')
 
 function Plainview(playerID) {
   if (playerID) {
@@ -26,6 +27,7 @@ function getPlaylistURLFromMediaTag(plainview, playerID) {
         if (childNode.type && childNode.src) {
           if (childNode.type == 'application/x-mpegURL' || childNode.type == 'vnd.apple.mpegURL') {
             plainview.playlistURL = childNode.src
+            plainview.fetcher     = new playlistFetcher(plainview.playlistURL)
           }
         }
       }
@@ -73,39 +75,6 @@ function createSourceBuffer(plainview, payload, segment, cb) {
 
 
 /**
- * fetchAndParsePlaylist - Fetches a m3u8 playlist from a url and parses it
- *
- * @param  {BOFH} client Client used to make the GET request through
- * @param  {String} url  URL of the media segment
- * @param  {Function} cb Callback used on complete.  Contains a parsedPlaylist and/or err
- */
-
-function fetchAndParsePlaylist(client, url, cb) {
-  // console.log("Fetching: ", url)
-  client.get(url, function(res, err){
-    if (!err) {
-      var decoder         = new TextDecoder();
-      var playlistStr     = decoder.decode(res)
-
-      var srcURL
-      if (url.endsWith('m3u8')) {
-        var urlComps    = url.split('/')
-        var compsStrips = urlComps.slice(2, urlComps.length-1)
-        var hostAndPath = compsStrips.join('/')
-        srcURL          = urlComps[0] + '//' + hostAndPath
-      }
-
-      var parsedPlaylist  = playlist(playlistStr, srcURL)
-      if (parsedPlaylist.info) {
-        cb(parsedPlaylist, null)
-        return
-      }
-    }
-    cb(null, err)
-  })
-}
-
-/**
  * fetchAndParseSegment - Fetches a media segment from a URL and runs it through the atom parser
  *
  * @param  {BOFH} client Client used to make the GET request through
@@ -127,17 +96,14 @@ function fetchAndParseSegment(client, url, cb) {
 
 
 Plainview.prototype.setup = function(cb) {
-  var pv = this
-  if (this.playlistURL) {
-    fetchAndParsePlaylist(this._bofh, this.playlistURL, function(playlist, err){
-      if (playlist) {
-        pv.parsedPlaylist = playlist
-        cb()
-        return
-      }
+  if (this.fetcher) {
+    this.fetcher.start(function(err) {
       cb(err)
     })
+    return
   }
+
+  cb('Could not fetch playlist')
 }
 
 
@@ -162,7 +128,6 @@ Plainview.prototype.configureMedia = function(cb) {
             cb(err)
             return
           }
-
           createSourceBuffer(pv, payload, tree, function(err){
             pv.currentSegmentIndex = segments.indexOf(segment)
             cb(err)

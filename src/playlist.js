@@ -5,7 +5,6 @@
 */
 const url = require('url');
 
-
 /**
  * Dictionary with RegExp objects used for finding stream info
  * duration, version, type, etc
@@ -16,7 +15,6 @@ var INFO_MATCH_PATTERNS = {
   mediaSequenceNumber: new RegExp(/#EXT-X-MEDIA_SEQUENCE:(\d+)/),
   type: new RegExp(/#EXT-X-PLAYLIST-TYPE:(\w+)/),
 }
-
 
 /**
  * Ditionary with RegExp objects used for finding segment info
@@ -78,10 +76,11 @@ var getSegmentsFrom = function(lines, srcURL) {
 
             /// If a srcURL is present we should prefix the segment urls with it
             var segmentURL
-            if (srcURL) {
+            if (srcURL && !srcURL.startsWith('/')) {
               if (!srcURL.endsWith('/')) {
                 srcURL = srcURL += '/'
               }
+
               var fullPath = url.resolve(srcURL, matches[1])
               segmentURL   = fullPath
             }
@@ -119,6 +118,13 @@ var setSegmentsFor = function(result, lines, srcURL) {
   if (segments) { result['segments'] = segments }
 }
 
+/**
+ * Playlist - An Object that represents an HLS playlist
+ *
+ * @param  {String} text   Contents of the HLS playlist
+ * @param  {String} srcURL URL from where the playlist was fetched.  Will be prefixed onto segment urls
+ * @return {Playlist}      Playlist object containing all the info about the playlist
+ */
 function Playlist(text, srcURL) {
 
   // Break up the playlist into an array of line entries
@@ -139,6 +145,12 @@ function Playlist(text, srcURL) {
   }
 }
 
+/**
+ * Playlist.prototype.segmentIterator - Builds an iterator object used for iterating over segment entries
+ *
+ * @param  {Number} startIndex This is optional.  Use if you want to start at a certain point in the array
+ * @return {Object}            Returns a simple object with a `next` function.  Call next to get the next segment
+ */
 Playlist.prototype.segmentIterator = function(startIndex) {
   var nextIndex
   if (startIndex) { nextIndex = startIndex }
@@ -154,13 +166,12 @@ Playlist.prototype.segmentIterator = function(startIndex) {
   }
 }
 
-
 /**
  * parseM3U8 - Parses an HLS playlist
  *
- * @param  {String} text The contents of the HLS playlist
- * @param  {type} srcURL The baseURL of the playlist.  Prefixed to each of the segment URLs
- * @return {Playlist}    An object representing the parsed contents of an HLS playlist
+ * @param  {String} text   The contents of the HLS playlist
+ * @param  {String} srcURL The baseURL of the playlist.  Prefixed to each of the segment URLs
+ * @return {Playlist}      An object representing the parsed contents of an HLS playlist
  */
 module.exports = function parseM3U8(text, srcURL) {
   if (!text) throw Error('Missing playlist text')

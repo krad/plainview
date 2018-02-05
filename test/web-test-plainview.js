@@ -19,48 +19,48 @@ test('that we can setup the document contents', t=> {
 })
 
 var pv
-test('that we can setup a plainview object', t=> {
-  t.plan(10)
-  document.body.innerHTML = html
+// test('that we can setup a plainview object', t=> {
+//   t.plan(10)
+//   document.body.innerHTML = html
+//
+//   pv = new plainview.Plainview('player')
+//   t.ok(pv, 'was able to create an object')
+//   t.ok(pv.player, 'found the player tag')
+//   t.ok(pv.playlistURL, 'found the playlistURL')
+//
+//   t.timeoutAfter(1000)
+//   t.notOk(pv.player.src, 'player did NOT have a source yet. good.')
+//   pv.setup(function(err){
+//     t.ok(1, 'player setup')
+//     t.notOk(err, 'no error produced.  good')
+//     t.ok(pv.parsedPlaylist, 'parsed playlist is present')
+//     t.ok(pv.playlistURL.startsWith('http://localhost'), 'playlist url has the host and proto prefixed on it')
+//
+//     var segments = pv.parsedPlaylist.segments
+//     t.ok(segments, 'segments were present in playlist')
+//
+//     var urlCheck = new RegExp(/http:\/\/localhost:(\d+)\/fileSeq/)
+//     t.ok(segments[0].url.match(urlCheck), 'segment url had host and proto prefixed')
+//   })
+// })
 
-  pv = new plainview.Plainview('player')
-  t.ok(pv, 'was able to create an object')
-  t.ok(pv.player, 'found the player tag')
-  t.ok(pv.playlistURL, 'found the playlistURL')
-
-  t.timeoutAfter(1000)
-  t.notOk(pv.player.src, 'player did NOT have a source yet. good.')
-  pv.setup(function(err){
-    t.ok(1, 'player setup')
-    t.notOk(err, 'no error produced.  good')
-    t.ok(pv.parsedPlaylist, 'parsed playlist is present')
-    t.ok(pv.playlistURL.startsWith('http://localhost'), 'playlist url has the host and proto prefixed on it')
-
-    var segments = pv.parsedPlaylist.segments
-    t.ok(segments, 'segments were present in playlist')
-
-    var urlCheck = new RegExp(/http:\/\/localhost:(\d+)\/fileSeq/)
-    t.ok(segments[0].url.match(urlCheck), 'segment url had host and proto prefixed')
-  })
-})
-
-test('that we can configureMedia', t=> {
-  t.plan(8)
-
-  t.ok(pv, 'plainview object present')
-  t.ok(pv.player, 'player present')
-  t.notOk(pv.player.src, 'player source not present')
-  t.ok(pv.parsedPlaylist, 'parsed playlist is present')
-  t.notOk(pv.currentSegmentIndex, 'player should not have a currentSegmentIndex')
-
-  t.timeoutAfter(1000)
-  pv.configureMedia(function(err){
-    if (err) { t.fail("Error fetching segment") }
-    t.ok('player started', 'got player callback')
-    t.ok(pv.mediaSource, 'mediaSource present')
-    t.equals(pv.currentSegmentIndex, 0, 'correct media segment set')
-  })
-})
+// test('that we can configureMedia', t=> {
+//   t.plan(8)
+//
+//   t.ok(pv, 'plainview object present')
+//   t.ok(pv.player, 'player present')
+//   t.notOk(pv.player.src, 'player source not present')
+//   t.ok(pv.parsedPlaylist, 'parsed playlist is present')
+//   t.notOk(pv.currentSegmentIndex, 'player should not have a currentSegmentIndex')
+//
+//   t.timeoutAfter(1000)
+//   pv.configureMedia(function(err){
+//     if (err) { t.fail("Error fetching segment") }
+//     t.ok('player started', 'got player callback')
+//     t.ok(pv.mediaSource, 'mediaSource present')
+//     t.equals(pv.currentSegmentIndex, 0, 'correct media segment set')
+//   })
+// })
 
 // test('that we can play', t=> {
 //   t.plan(7)

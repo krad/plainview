@@ -29,8 +29,11 @@ test('test that we can mock request/responses', t=> {
   }
 
   t.timeoutAfter(1000)
-  bofh.get('/fileSeq1.mp4', function(data){
+  var promise = bofh.get('/fileSeq1.mp4')
+  promise.then(function(data){
     t.ok(data, 'got data back')
+  }).catch(function(err){
+    t.fail('Promise rejected', err)
   })
 
 })
