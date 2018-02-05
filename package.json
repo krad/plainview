@@ -7,7 +7,7 @@
     "test": "set -e; npm run nodetest; npm run webtest",
     "autotest": "tape-watch test/**/*-test.js | tap-spec",
     "nodetest": "tape test/**/*-test.js | tap-spec",
-    "webtest": "browserify test/web-test-*.js | tape-run --static='./test/fixtures'| tap-spec"
+    "webtest": "browserify test/web-test-*.js | tape-run --static='./test/fixtures' | tap-spec"
   },
   "author": "iam@krad.io",
   "license": "MIT",
