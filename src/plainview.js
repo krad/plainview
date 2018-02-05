@@ -1,18 +1,22 @@
 /**
 *  @file plainview - a suite of tools for parsing m3u8 and mp4 files.
 *  @author krad.io <iam@krad.io>
-*  @version 0.0.2
+*  @version 0.0.3
  */
-var playlist  = require('./playlist')
-var atomPaser = require('./atoms')
-var bofh      = require('./bofh')
+var playlist        = require('./playlist')
+var atomPaser       = require('./atoms')
+var bofh            = require('./bofh')
+var playerTemplate  = require('./player_template')
 
 function Plainview(playerID) {
-  if (playerID) { setupPlayer(this, playerID) }
+  if (playerID) {
+    getPlaylistURLFromMediaTag(this, playerID)
+    skinPlayer(this, playerID)
+  }
   this._bofh = new bofh.BOFH()
 }
 
-function setupPlayer(plainview, playerID) {
+function getPlaylistURLFromMediaTag(plainview, playerID) {
   var player = document.getElementById(playerID)
   if (player) {
     plainview.player = player
@@ -27,6 +31,23 @@ function setupPlayer(plainview, playerID) {
       }
     }
   }
+}
+
+function skinPlayer(plainview, playerID) {
+  if (plainview.player) {
+    if (plainview.player.poster) {
+      var posterURL = 'url(' + plainview.player.poster + ') no-repeat'
+      plainview.player.setAttribute('background', posterURL)
+      plainview.player.removeAttribute('poster')
+    }
+
+    // Remove native controls
+    plainview.player.controls = false
+
+    // Insert HTML for our controls
+    plainview.player.insertAdjacentHTML('afterend', playerTemplate)
+  }
+
 }
 
 function createSourceBuffer(plainview, payload, segment, cb) {
@@ -222,11 +243,6 @@ Plainview.prototype.play = function(cb) {
           cb(err)
           return
         }
-
-        var duration = pv.parsedPlaylist.segments
-        .filter(function(s) { if (!s.isIndex) { return s }})
-        .map(function(s) { return s.duration })
-        .reduce(function(a, c) { return a + c })
 
         startPlaying(pv, function(e){
           cb(e)

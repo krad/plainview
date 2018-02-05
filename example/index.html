@@ -2,9 +2,16 @@
   <head>
     <title>plainview.js - example player</title>
 
+    <style media="screen">
+      video {
+        border:1px solid #000;
+      }
+    </style>
+
   </head>
   <body>
-    <video id='player' controls>
+
+    <video id='player' poster='/hls/0.jpg'>
       <source src="/hls/vod.m3u8" type="application/x-mpegURL">
     </video>
 

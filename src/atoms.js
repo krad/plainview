@@ -1,7 +1,7 @@
 /**
 *  @file Atom parsing
 *  @author krad.io <iam@krad.io>
-*  @version 0.0.2
+*  @version 0.0.3
 **/
 var atomProcessor = require('./atom_processor')
 

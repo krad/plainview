@@ -1,7 +1,7 @@
 /**
  * @file bofh - Bastard Operator from Hell.  Async HLS fetcher thing.
  * @author krad.io <iam@krad.io>
- * @version 0.0.2
+ * @version 0.0.3
  */
 
  function BOFH(constructor) {

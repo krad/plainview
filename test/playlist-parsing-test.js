@@ -5,7 +5,7 @@ var playlist  = require('../src/playlist')
 var mock = fs.readFileSync('./test/fixtures/vod.m3u8').toString()
 
 test('that we can parse a m3u8 playlist', t=> {
-  t.plan(16)
+  t.plan(18)
   var parsed = playlist(mock)
   t.ok(parsed, 'parsed mock')
 
@@ -14,6 +14,9 @@ test('that we can parse a m3u8 playlist', t=> {
   t.equals(parsed['info']['version'], 7, 'hls version correct')
   t.equals(parsed['info']['mediaSequenceNumber'], 1, 'media seq num correct')
   t.equals(parsed['info']['type'], "VOD", 'playlist type correct')
+
+  t.ok(parsed.info.hasOwnProperty('duration'), 'has a duration')
+  t.equals(26.060363736, parsed['info']['duration'], 'duration was correct')
 
   t.ok(parsed.hasOwnProperty('segments'), 'has segments')
   t.ok(Array.isArray(parsed.segments), 'segments is array')
@@ -58,5 +61,43 @@ test('that we can prefix segment urls with urls', t=> {
   segments = parsed.segments
   t.ok(segments, 'segments present')
   t.equals(segments[0].url, 'https://krad.tv/fileSeq0.mp4', 'prefixed the url properly')
+
+})
+
+test('that we can interate over segments of the playlist', t=> {
+  t.plan(15)
+
+  var pl = playlist(mock)
+  t.ok(pl, 'created playlist')
+
+  var iterator = pl.segmentIterator()
+  t.ok(iterator, 'created a segment iterator')
+
+  var segment = iterator.next()
+  t.ok(segment, 'iterator vended a segment')
+  t.equals(segment.url, 'fileSeq0.mp4', 'url in vended segment was correct')
+
+  segment = iterator.next()
+  t.ok(segment, 'vended another segment')
+  t.equals(segment.url, 'fileSeq1.mp4', 'url was for next segment')
+
+  segment = iterator.next()
+  t.ok(segment, 'vended another segment')
+  t.equals(segment.url, 'fileSeq2.mp4', 'url was for next segment')
+
+  segment = iterator.next()
+  t.ok(segment, 'vended another segment')
+  t.equals(segment.url, 'fileSeq3.mp4', 'url was for next segment')
+
+  segment = iterator.next()
+  t.ok(segment, 'vended another segment')
+  t.equals(segment.url, 'fileSeq4.mp4', 'url was for next segment')
+
+  segment = iterator.next()
+  t.ok(segment, 'vended another segment')
+  t.equals(segment.url, 'fileSeq5.mp4', 'url was for next segment')
+
+  segment = iterator.next()
+  t.notOk(segment, 'hit the end of the iterator')
 
 })

@@ -1,7 +1,7 @@
 /**
  * @file Atom processing (fill details from payload)
  * @author krad.io <iam@krad.io>
- * @version 0.0.2
+ * @version 0.0.3
  */
 
 
