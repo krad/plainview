@@ -52,7 +52,7 @@ function skinPlayer(plainview, playerID) {
 
 }
 
-function createSourceBuffer(plainview, payload, segment, cb) {
+function createSourceBuffer(plainview, segment, cb) {
   if (window.MediaSource) {
     if (segment.codecsString) {
       if (MediaSource.isTypeSupported(segment.codecsString)) {
@@ -61,7 +61,7 @@ function createSourceBuffer(plainview, payload, segment, cb) {
           var codecs = segment.codecsString
           ms.addEventListener('sourceopen', function(e){
             _ = ms.addSourceBuffer(codecs)
-            ms.sourceBuffers[0].appendBuffer(payload);
+            ms.sourceBuffers[0].appendBuffer(segment.payload);
             plainview.mediaSource = ms
             cb(null)
           })
@@ -74,30 +74,11 @@ function createSourceBuffer(plainview, payload, segment, cb) {
 }
 
 
-/**
- * fetchAndParseSegment - Fetches a media segment from a URL and runs it through the atom parser
- *
- * @param  {BOFH} client Client used to make the GET request through
- * @param  {String} url  URL of the media segment
- * @param  {Function} cb Callback used on complete.  Contains Uint8Array, parsed atom, error
- */
-function fetchAndParseSegment(client, url, cb) {
-  // console.log("Fetching: ", url)
-  client.get(url, function(res, err){
-    if (!err) {
-      var uint8buffer = new Uint8Array(res)
-      var tree        = atomPaser(uint8buffer)
-      cb(uint8buffer, tree, null)
-      return
-    }
-    cb(null, null, err)
-  })
-}
-
-
 Plainview.prototype.setup = function(cb) {
-  if (this.fetcher) {
-    this.fetcher.start(function(err) {
+  var pv = this
+  if (pv.fetcher) {
+    pv.fetcher.start(function(err) {
+      if (!err) { pv.segments = pv.fetcher.segmentFetchIterator() }
       cb(err)
     })
     return
@@ -118,77 +99,17 @@ Plainview.prototype.setup = function(cb) {
  */
 Plainview.prototype.configureMedia = function(cb) {
   var pv = this
-  if (pv.parsedPlaylist) {
-    if (pv.parsedPlaylist.segments) {
-      var segments = pv.parsedPlaylist.segments.filter(function(s) { if(s.isIndex) { return s }})
-      if (segments.length > 0) {
-        var segment = segments[0]
-        fetchAndParseSegment(pv._bofh, segment.url, function(payload, tree, err){
-          if (err) {
-            cb(err)
-            return
-          }
-          createSourceBuffer(pv, payload, tree, function(err){
-            pv.currentSegmentIndex = segments.indexOf(segment)
-            cb(err)
-          })
-          return
-        })
-        return
-      } else { cb('Initialization Segment not present') }
-    } else { cb('Playlist has no segments') }
-  } else { cb('Playlist not present') }
-}
-
-// TODO: Replace with iterator once we prove this works
-function nextSegment(pv) {
-  if (pv.parsedPlaylist) {
-    if (pv.parsedPlaylist.segments) {
-      if (typeof pv.currentSegmentIndex == 'number') {
-        var nextIndex = pv.currentSegmentIndex + 1
-        if (pv.parsedPlaylist.segments.length >= nextIndex) {
-          return [nextIndex, pv.parsedPlaylist.segments[nextIndex]]
-        }
-      }
-    }
-  }
-
-  return null
-}
-
-function startPlaying(pv, cb) {
-  var ms = pv.mediaSource
-  if (ms) {
-    loadNextSegment(pv, function(e) {
-      if (!e) {
-        cb(null);
-        startPlaying(pv);
-      } else {
-        console.log('failed in recursive play');
-      }
+  if (pv.segments) {
+    var nextSegmentFetch = pv.segments.next()
+    nextSegmentFetch.then(function(atom){
+      createSourceBuffer(pv, atom, function(err){
+        cb(err)
+      })
+    }).catch(function(err){
+      cb(err)
     })
-
-  } else { cb('MediaSource not present') }
-}
-
-function loadNextSegment(pv, cb) {
-  console.log('Loading next segment...');
-  var next = nextSegment(pv)
-  if (next) {
-    var nextIdx = next[0]
-    var segment = next[1]
-    fetchAndParseSegment(pv._bofh, segment.url, function(payload, atom, err) {
-      if (err) { cb(err); return }
-
-      var buffer = new Uint8Array(payload)
-      console.log(pv.player.error);
-      pv.mediaSource.sourceBuffers[0].appendBuffer(buffer)
-      pv.currentSegmentIndex = nextIdx
-      cb(null)
-    })
-  } else {
-    console.log('No next segment.');
-  }
+    return
+  } else { cb('Playlist fetcher not present') }
 }
 
 Plainview.prototype.play = function(cb) {
