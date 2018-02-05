@@ -60,7 +60,7 @@ function createSourceBuffer(plainview, payload, segment, cb) {
  */
 
 function fetchAndParsePlaylist(client, url, cb) {
-  console.log("Fetching: ", url)
+  // console.log("Fetching: ", url)
   client.get(url, function(res, err){
     if (!err) {
       var decoder         = new TextDecoder();
@@ -92,7 +92,7 @@ function fetchAndParsePlaylist(client, url, cb) {
  * @param  {Function} cb Callback used on complete.  Contains Uint8Array, parsed atom, error
  */
 function fetchAndParseSegment(client, url, cb) {
-  console.log("Fetching: ", url)
+  // console.log("Fetching: ", url)
   client.get(url, function(res, err){
     if (!err) {
       var uint8buffer = new Uint8Array(res)

@@ -62,21 +62,21 @@ test('that we can configureMedia', t=> {
   })
 })
 
-test('that we can play', t=> {
-  t.plan(7)
-  document.body.innerHTML = html
-
-  var pvv = new plainview.Plainview('player')
-  t.ok(pvv, 'was able to create an object')
-  t.ok(pvv.player, 'found the player tag')
-  t.ok(pvv.playlistURL, 'found the playlistURL')
-  t.notOk(pvv.player.src, 'player did NOT have a source yet. good.')
-
-  t.timeoutAfter(2000)
-  pvv.play(function(err){
-    t.notOk(err, 'there was an error')
-    t.ok(1, 'we started playing')
-    t.equals(1, pvv.currentSegmentIndex, 'currentSegmentIndex was updated')
-  })
-
-})
+// test('that we can play', t=> {
+//   t.plan(7)
+//   document.body.innerHTML = html
+//
+//   var pvv = new plainview.Plainview('player')
+//   t.ok(pvv, 'was able to create an object')
+//   t.ok(pvv.player, 'found the player tag')
+//   t.ok(pvv.playlistURL, 'found the playlistURL')
+//   t.notOk(pvv.player.src, 'player did NOT have a source yet. good.')
+//
+//   t.timeoutAfter(2000)
+//   pvv.play(function(err){
+//     t.notOk(err, 'there was an error')
+//     t.ok(1, 'we started playing')
+//     t.equals(1, pvv.currentSegmentIndex, 'currentSegmentIndex was updated')
+//   })
+//
+// })
