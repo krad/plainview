@@ -15,6 +15,7 @@ function Plainview(playerID) {
     skinPlayer(this, playerID)
   }
   this._bofh = new bofh.BOFH()
+  this.segmentQueue = []
 }
 
 function getPlaylistURLFromMediaTag(plainview, playerID) {
@@ -60,9 +61,16 @@ function createSourceBuffer(plainview, segment, cb) {
         if (plainview.player) {
           var codecs = segment.codecsString
           ms.addEventListener('sourceopen', function(e){
-            _ = ms.addSourceBuffer(codecs)
+            var sourceBuffer = ms.addSourceBuffer(codecs)
             ms.sourceBuffers[0].appendBuffer(segment.payload);
             plainview.mediaSource = ms
+
+            sourceBuffer.addEventListener('updateend', function() {
+              if (plainview.segmentQueue.length) {
+                sourceBuffer.appendBuffer(plainview.segmentQueue.shift());
+              }
+            }, false)
+
             cb(ms, null)
           })
           plainview.player.src = window.URL.createObjectURL(ms)
@@ -135,24 +143,29 @@ Plainview.prototype.configureMedia = function() {
   })
 }
 
+function startPlaying(pv) {
+  var segmentFetch
+  while (segmentFetch = pv.segments.next()) {
+    segmentFetch.then(function(atom){
+      pv.segmentQueue.push(atom.payload)
+    }).catch(function(err){
+      console.log(err);
+    })
+  }
+}
+
 Plainview.prototype.play = function(cb) {
   var pv = this
-
-  if (pv.mediaSource) {
-    startPlaying(pv, function(e){ cb(e) })
-  } else {
-
-    pv.setup().then(function(){
-      return pv.configureMedia()
-    }).then(function(ms){
-      console.log('start playing dawg!');
-      cb()
-    }).catch(function(err){
-      console.log('problem starting');
-      cb(err)
-    })
-    
-  }
+  pv.setup().then(function(){
+    return pv.configureMedia()
+  }).then(function(ms){
+    startPlaying(pv)
+    pv.player.play()
+    cb()
+  }).catch(function(err){
+    console.log('problem starting');
+    cb(err)
+  })
 }
 
 exports.Plainview = Plainview
