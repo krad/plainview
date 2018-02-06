@@ -49,8 +49,38 @@ function skinPlayer(plainview, playerID) {
 
     // Insert HTML for our controls
     plainview.player.insertAdjacentHTML('afterend', playerTemplate)
+    configurePlayerControls(playerTemplate)
   }
 
+}
+
+function configurePlayerControls(playerTemplate) {
+  document.getElementById('playpause').addEventListener('click', function(event){
+    if (event.target.dataset.state == 'play') {
+      event.target.dataset.state = 'pause'
+      event.target.innerHTML = 'Pause'
+    } else {
+      event.target.dataset.state = 'play'
+      event.target.innerHTML = 'Play'
+    }
+  }, false)
+
+  document.getElementById('mute').addEventListener('click', function(event){
+    console.log('mute');
+
+  }, false)
+
+  document.getElementById('volinc').addEventListener('click', function(event){
+    console.log('volinc');
+  }, false)
+
+  document.getElementById('voldec').addEventListener('click', function(event){
+    console.log('voldec');
+  }, false)
+
+  document.getElementById('fs').addEventListener('click', function(event){
+    console.log('fullscreen');
+  }, false)
 }
 
 function createSourceBuffer(plainview, segment, cb) {
@@ -64,8 +94,6 @@ function createSourceBuffer(plainview, segment, cb) {
             var sourceBuffer = ms.addSourceBuffer(codecs)
 
             sourceBuffer.addEventListener('updateend', function() {
-              console.log('updatedend');
-              console.log(plainview.segmentQueue.length);
               if (plainview.segmentQueue.length) {
                 sourceBuffer.appendBuffer(plainview.segmentQueue.shift());
               }
@@ -94,7 +122,6 @@ function primeForStreaming(plainview, cb) {
     cb('Could not fetch playlist')
   }
 }
-
 
 Plainview.prototype.setup = function() {
   var pv = this
@@ -171,7 +198,6 @@ Plainview.prototype.play = function(cb) {
     pv.player.play()
     cb()
   }).catch(function(err){
-    console.log('problem starting');
     cb(err)
   })
 }
