@@ -49,25 +49,34 @@ function skinPlayer(plainview, playerID) {
 
     // Insert HTML for our controls
     plainview.player.insertAdjacentHTML('afterend', playerTemplate)
-    configurePlayerControls(playerTemplate)
+    configurePlayerControls(plainview.player, playerTemplate)
   }
 
 }
 
-function configurePlayerControls(playerTemplate) {
+function configurePlayerControls(player, playerTemplate) {
   document.getElementById('playpause').addEventListener('click', function(event){
     if (event.target.dataset.state == 'play') {
       event.target.dataset.state = 'pause'
       event.target.innerHTML = 'Pause'
+      player.play()
     } else {
       event.target.dataset.state = 'play'
       event.target.innerHTML = 'Play'
+      player.pause()
     }
   }, false)
 
   document.getElementById('mute').addEventListener('click', function(event){
-    console.log('mute');
-
+    if (event.target.dataset.state == 'mute') {
+      event.target.dataset.state = 'unmute'
+      event.target.innerHTML = 'Unmute'
+      player.muted = true
+    } else {
+      event.target.dataset.state = 'mute'
+      event.target.innerHTML = 'Mute'
+      player.muted = false
+    }
   }, false)
 
   document.getElementById('volinc').addEventListener('click', function(event){
@@ -81,6 +90,19 @@ function configurePlayerControls(playerTemplate) {
   document.getElementById('fs').addEventListener('click', function(event){
     console.log('fullscreen');
   }, false)
+
+  player.addEventListener('timeupdate', updateProgressBar.bind(player), false);
+
+}
+
+function updateProgressBar(x) {
+  // console.log(x)
+  // console.log(player.duration, player.currentTime)
+  // var progressBar = document.getElementById('progress-bar')
+  // var percentage = Math.floor((100 / player.duration) * player.currentTime)
+  // console.log(percentage)
+  // progressBar.value     = percentage
+  // progressBar.innerHTML = percentage + '% played'
 }
 
 function createSourceBuffer(plainview, segment, cb) {
@@ -194,6 +216,8 @@ Plainview.prototype.play = function(cb) {
   pv.setup().then(function(){
     return pv.configureMedia()
   }).then(function(ms){
+    // pv.mediaSource.duration = pv.fetcher.parsedPlaylist.info.duration
+    // console.log(pv.player.duration);
     startPlaying(pv)
     pv.player.play()
     cb()
