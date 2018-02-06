@@ -4,7 +4,6 @@
  * @version 0.0.3
  */
 
-
 /**
  * var parseFTYP - Parses a 'ftyp atom'
  *

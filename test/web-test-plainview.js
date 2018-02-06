@@ -22,7 +22,7 @@ var pv
 test('that we can setup a plainview object', t=> {
   t.plan(10)
 
-  pv = new plainview.Plainview('player')
+  pv = new plainview('player')
   t.ok(pv, 'was able to create an object')
   t.ok(pv.player, 'found the player tag')
   t.ok(pv.playlistURL, 'found the playlistURL')
@@ -78,7 +78,7 @@ test('that we can play', t=> {
   t.plan(6)
   document.body.innerHTML = html
 
-  var pvv = new plainview.Plainview('player')
+  var pvv = new plainview('player')
   t.ok(pvv, 'was able to create an object')
   t.ok(pvv.player, 'found the player tag')
   t.ok(pvv.playlistURL, 'found the playlistURL')

@@ -13,7 +13,7 @@ var html = `
 `
 
 document.body.innerHTML = html
-var pv = new plainview.Plainview('player')
+var pv = new plainview('player')
 
 
 test('that we can get a list of a/v codecs a browser could support', t=>{
@@ -42,7 +42,7 @@ test('that we can check if a browser has native HLS support', t=> {
   var s = new support()
   t.ok(s, 'support object created')
 
-  var check = s.hasNativeSupportFor(pv.player)
+  var check = s.hasNativeHLSSupportFor(pv.player)
   t.equals(false, check, 'Chrome does NOT have native HLS support')
 
   var fakePlayer = {}
@@ -53,7 +53,7 @@ test('that we can check if a browser has native HLS support', t=> {
     return false
   }
 
-  check = s.hasNativeSupportFor(fakePlayer)
+  check = s.hasNativeHLSSupportFor(fakePlayer)
   t.ok(check, 'it supports our fake player')
 
 })
