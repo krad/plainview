@@ -5,6 +5,7 @@ console.log(player);
 
 player.play(function(e){
   console.log('started playing');
+  console.log(e);
 })
 
 document.wut = player

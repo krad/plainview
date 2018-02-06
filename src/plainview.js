@@ -62,14 +62,17 @@ function createSourceBuffer(plainview, segment, cb) {
           var codecs = segment.codecsString
           ms.addEventListener('sourceopen', function(e){
             var sourceBuffer = ms.addSourceBuffer(codecs)
-            ms.sourceBuffers[0].appendBuffer(segment.payload);
-            plainview.mediaSource = ms
 
             sourceBuffer.addEventListener('updateend', function() {
+              console.log('updatedend');
+              console.log(plainview.segmentQueue.length);
               if (plainview.segmentQueue.length) {
                 sourceBuffer.appendBuffer(plainview.segmentQueue.shift());
               }
             }, false)
+
+            ms.sourceBuffers[0].appendBuffer(segment.payload);
+            plainview.mediaSource = ms
 
             cb(ms, null)
           })
@@ -147,7 +150,12 @@ function startPlaying(pv) {
   var segmentFetch
   while (segmentFetch = pv.segments.next()) {
     segmentFetch.then(function(atom){
-      pv.segmentQueue.push(atom.payload)
+      var sourceBuffer = pv.mediaSource.sourceBuffers[0]
+      if (sourceBuffer.updating) {
+        pv.segmentQueue.push(atom.payload)
+      } else {
+        sourceBuffer.appendBuffer(atom.payload)
+      }
     }).catch(function(err){
       console.log(err);
     })
