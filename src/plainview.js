@@ -63,30 +63,55 @@ function createSourceBuffer(plainview, segment, cb) {
             _ = ms.addSourceBuffer(codecs)
             ms.sourceBuffers[0].appendBuffer(segment.payload);
             plainview.mediaSource = ms
-            cb(null)
+            cb(ms, null)
           })
           plainview.player.src = window.URL.createObjectURL(ms)
           return
         }
-      } else { cb('Media format not supported' + segment.codecsString) }
-    } else { cb('Segment has no media codecs defined') }
-  } else { cb('MediaSource not present') }
+      } else { cb(null, 'Media format not supported' + segment.codecsString) }
+    } else { cb(null, 'Segment has no media codecs defined') }
+  } else { cb(null, 'MediaSource not present') }
 }
 
-
-Plainview.prototype.setup = function(cb) {
-  var pv = this
-  if (pv.fetcher) {
-    pv.fetcher.start(function(err) {
-      if (!err) { pv.segments = pv.fetcher.segmentFetchIterator() }
+function primeForStreaming(plainview, cb) {
+  if (plainview.fetcher) {
+    plainview.fetcher.start(function(err) {
+      if (!err) { plainview.segments = plainview.fetcher.segmentFetchIterator() }
       cb(err)
     })
-    return
+  } else {
+    cb('Could not fetch playlist')
   }
-
-  cb('Could not fetch playlist')
 }
 
+
+Plainview.prototype.setup = function() {
+  var pv = this
+  return new Promise((resolve, reject) => {
+    primeForStreaming(pv, function(err){
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
+function fetchNextSegment(pv) {
+  return new Promise((resolve, reject) => {
+    if (pv.segments) {
+      var nextSegmentFetch = pv.segments.next()
+      nextSegmentFetch.then(function(atom){
+        resolve(atom)
+      }).catch(function(err){
+        reject(err)
+      })
+    } else {
+      reject('Segment iterator not present')
+    }
+  })
+}
 
 /**
  * Plainview.prototype.configureMedia - Configures the player using media info form actual a/v stream
@@ -97,46 +122,36 @@ Plainview.prototype.setup = function(cb) {
  *
  * @param  {Function} cb Callback that gets executed when configureMedia is complete
  */
-Plainview.prototype.configureMedia = function(cb) {
+Plainview.prototype.configureMedia = function() {
   var pv = this
-  if (pv.segments) {
-    var nextSegmentFetch = pv.segments.next()
-    nextSegmentFetch.then(function(atom){
-      createSourceBuffer(pv, atom, function(err){
-        cb(err)
+  return new Promise((resolve, reject) => {
+    fetchNextSegment(pv).then(function(atom){
+      createSourceBuffer(pv, atom, function(ms, err){
+        resolve(ms)
       })
     }).catch(function(err){
-      cb(err)
+      reject(err)
     })
-    return
-  } else { cb('Playlist fetcher not present') }
+  })
 }
 
 Plainview.prototype.play = function(cb) {
-  if (this.mediaSource) {
-    startPlaying(this, function(e){ cb(e) })
+  var pv = this
+
+  if (pv.mediaSource) {
+    startPlaying(pv, function(e){ cb(e) })
   } else {
 
-    var pv = this
-    pv.setup(function(err) {
-      if (err) {
-        cb(err)
-        return
-      }
-
-      pv.configureMedia(function(err){
-        if (err) {
-          cb(err)
-          return
-        }
-
-        startPlaying(pv, function(e){
-          cb(e)
-        })
-
-        return
-      })
+    pv.setup().then(function(){
+      return pv.configureMedia()
+    }).then(function(ms){
+      console.log('start playing dawg!');
+      cb()
+    }).catch(function(err){
+      console.log('problem starting');
+      cb(err)
     })
+    
   }
 }
 
