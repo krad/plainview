@@ -11,17 +11,16 @@ var html = `
 </html>
 `
 
+document.body.innerHTML = html
+
 test('that we can setup the document contents', t=> {
-  t.plan(2)
-  t.notOk(document.getElementById('player'), 'document starts with no player')
-  document.body.innerHTML = html
+  t.plan(1)
   t.ok(document.getElementById('player'), 'found the player')
 })
 
 var pv
 test('that we can setup a plainview object', t=> {
   t.plan(10)
-  document.body.innerHTML = html
 
   pv = new plainview.Plainview('player')
   t.ok(pv, 'was able to create an object')
