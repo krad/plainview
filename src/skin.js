@@ -56,7 +56,7 @@ function skinPlayer(skinner, player) {
       }
 
       if (button.id == 'fs') {
-        button.innerHTML = playerTemplate.fullscreenButton(18, 18, 'Fullscreen')
+        button.innerHTML = playerTemplate.fullscreenButton(13, 13, 'Fullscreen')
       }
 
       if (button.id == 'timecode') {

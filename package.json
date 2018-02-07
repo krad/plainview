@@ -7,15 +7,20 @@
     "test": "set -e; npm run nodetest; npm run webtest",
     "autotest": "tape-watch test/**/*-test.js | tap-spec",
     "nodetest": "tape test/**/*-test.js | tap-spec",
-    "webtest": "browserify test/web-test-*.js | tape-run --static='./test/fixtures' | tap-spec"
+    "webtest": "browserify test/web-test-*.js | tape-run --static='./test/fixtures' | tap-spec",
+    "build": "browserify src/example.js -t [babelify --presets es2015] | uglifyjs > build/plainview.js"
   },
   "author": "iam@krad.io",
   "license": "MIT",
   "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babelify": "^8.0.0",
     "browserify": "^15.2.0",
     "tap-spec": "^4.1.1",
     "tape": "^4.8.0",
     "tape-run": "^3.0.2",
-    "tape-watch": "^2.3.0"
+    "tape-watch": "^2.3.0",
+    "uglify-js": "^3.3.9"
   }
 }
