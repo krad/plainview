@@ -13,13 +13,8 @@ function skinPlayer(skinner, player) {
     playerControls.setAttribute('class', 'player-controls')
     playerControls.innerHTML = playerTemplate.html
 
-    videoWrapper.addEventListener('mouseenter', function(e){
-      unfade(playerControls)
-    })
-
-    videoWrapper.addEventListener('mouseleave', function(e){
-      fade(playerControls)
-    })
+    videoWrapper.addEventListener('mouseenter', function(e){ unfade(playerControls) })
+    videoWrapper.addEventListener('mouseleave', function(e){ fade(playerControls) })
 
     // Place the wrapper/controls after the video tag
     // then remove video tag and insert it into the wrapper
@@ -30,9 +25,12 @@ function skinPlayer(skinner, player) {
 
     // Style the video wrapper and controls wrapper
     // videoWrapper.style.cssText    = 'position: relative;'
-    videoWrapper.style.cssText    += 'display: flex; justify-content: flex-end;  flex-direction: column;'
-    playerControls.style.cssText  = 'background-color: rgba(0, 0, 0, 0.3);'
-    player.style.cssText          = 'width:100% !important; height: auto !important; background:#000;'
+    videoWrapper.style.cssText    += 'position: relative;'
+    playerControls.style.cssText  =  'position: absolute; bottom:0; width: 100%'
+    playerControls.style.cssText  +=  'background-color: rgba(0, 0, 0, 0.5);'
+    player.style.cssText          =  'width: 100% !important;'
+    player.style.cssText          += 'height: auto !important;'
+    player.style.cssText          += 'background:#000;'
 
     // Style the progress bar
     // pale (Alice blue) EAF6FD
@@ -105,7 +103,7 @@ function unfade(element) {
     element.style.opacity = opacity
     element.style.filter = 'alpha(opacity=' + opacity * 100 + ')'
     opacity += opacity * 0.1
-  })
+  }, 10)
 }
 
 function configurePlayerControls(player) {
