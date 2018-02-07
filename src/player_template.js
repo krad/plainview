@@ -18,6 +18,7 @@ function html() {
   progress::-webkit-progress-value { background: #209cee; }
   progress[aria-valuenow]:before  { background: #209cee; }
   .player-controls button:focus { outline: none; }
+  .player-controls button:active { outline: none; }
  </style>
  `
 }

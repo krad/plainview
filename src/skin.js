@@ -33,12 +33,10 @@ function skinPlayer(skinner, player) {
     player.style.cssText          += 'background:#000;'
 
     // Style the progress bar
-    // pale (Alice blue) EAF6FD
-    // done blue 209cee
     var progressWrapper = videoWrapper.querySelector('.progress')
     var progressBar = progressWrapper.querySelector('progress')
     progressWrapper.style.cssText = 'width:100%;';
-    progressBar.style.cssText     = 'height: 3px; width:100%; appearance: none; -webkit-appearance: none;'
+    progressBar.style.cssText     = 'height: 2px; width:100%; appearance: none; -webkit-appearance: none;'
     progressBar.style.cssText     += 'color: #209cee;'
     progressBar.style.cssText     += 'background-color: #EAF6FD;'
 
@@ -48,9 +46,10 @@ function skinPlayer(skinner, player) {
     for (var i = 0; i < buttons.length; i++) {
       var button = buttons[i]
       button.style.cssText = 'padding: 16px;'
-      button.style.cssText += 'background:none;'
+      button.style.cssText += 'background: rgba(0, 0, 0, 0.0);'
       button.style.cssText += 'color:#fff;'
       button.style.cssText += 'border-color: rgba(0, 0, 0, 0.5);'
+      button.style.csstext += 'border-style: solid;'
 
       if (button.id == 'playpause') {
         button.innerHTML = playerTemplate.playButton
@@ -65,9 +64,9 @@ function skinPlayer(skinner, player) {
       }
 
       if (i == buttons.length - 1) {
-        button.style.cssText += 'border-top:0px; border-bottom:0px; border-left:1px, border-right:0px;'
+        button.style.cssText += 'border-width: 0px 0px 0px 1px;'
       } else {
-        button.style.cssText += 'border-top:0; border-bottom:0; border-left:0;'
+        button.style.cssText += 'border-width: 0px 1px 0px 0px'
       }
     }
 
