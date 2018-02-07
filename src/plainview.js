@@ -1,18 +1,24 @@
 /**
 *  @file plainview - a suite of tools for parsing m3u8 and mp4 files.
 *  @author krad.io <iam@krad.io>
-*  @version 0.0.2
+*  @version 0.0.3
  */
-var playlist  = require('./playlist')
-var atomPaser = require('./atoms')
-var bofh      = require('./bofh')
+var playlist        = require('./playlist')
+var atomPaser       = require('./atoms')
+var bofh            = require('./bofh')
+var playlistFetcher = require('./playlist_fetcher')
+var skinner         = require('./skin')
 
 function Plainview(playerID) {
-  if (playerID) { setupPlayer(this, playerID) }
-  this._bofh = new bofh.BOFH()
+  if (playerID) {
+    getPlaylistURLFromMediaTag(this, playerID)
+    this.skinner = new skinner(playerID)
+    this._bofh = new bofh.BOFH()
+    this.segmentQueue = []
+  }
 }
 
-function setupPlayer(plainview, playerID) {
+function getPlaylistURLFromMediaTag(plainview, playerID) {
   var player = document.getElementById(playerID)
   if (player) {
     plainview.player = player
@@ -22,6 +28,7 @@ function setupPlayer(plainview, playerID) {
         if (childNode.type && childNode.src) {
           if (childNode.type == 'application/x-mpegURL' || childNode.type == 'vnd.apple.mpegURL') {
             plainview.playlistURL = childNode.src
+            plainview.fetcher     = new playlistFetcher(plainview.playlistURL)
           }
         }
       }
@@ -29,96 +36,81 @@ function setupPlayer(plainview, playerID) {
   }
 }
 
-function createSourceBuffer(plainview, payload, segment, cb) {
+function createSourceBuffer(plainview, segment, cb) {
   if (window.MediaSource) {
     if (segment.codecsString) {
       if (MediaSource.isTypeSupported(segment.codecsString)) {
         var ms = new MediaSource()
         if (plainview.player) {
           var codecs = segment.codecsString
+
+          player.addEventListener('timeupdate', function(e){
+            plainview.skinner.update(e)
+          }, false);
+
           ms.addEventListener('sourceopen', function(e){
-            _ = ms.addSourceBuffer(codecs)
-            ms.sourceBuffers[0].appendBuffer(payload);
+            var sourceBuffer = ms.addSourceBuffer(codecs)
+
+            sourceBuffer.addEventListener('updateend', function() {
+              if (plainview.segmentQueue.length) {
+                // console.log(plainview.player.videoHeight);
+                // console.log(plainview.player.videoWidth);
+
+                sourceBuffer.appendBuffer(plainview.segmentQueue.shift());
+              }
+            }, false)
+
+            ms.sourceBuffers[0].appendBuffer(segment.payload);
             plainview.mediaSource = ms
-            cb(null)
+
+            cb(ms, null)
           })
           plainview.player.src = window.URL.createObjectURL(ms)
           return
         }
-      } else { cb('Media format not supported' + segment.codecsString) }
-    } else { cb('Segment has no media codecs defined') }
-  } else { cb('MediaSource not present') }
+      } else { cb(null, 'Media format not supported' + segment.codecsString) }
+    } else { cb(null, 'Segment has no media codecs defined') }
+  } else { cb(null, 'MediaSource not present') }
 }
 
-
-/**
- * fetchAndParsePlaylist - Fetches a m3u8 playlist from a url and parses it
- *
- * @param  {BOFH} client Client used to make the GET request through
- * @param  {String} url  URL of the media segment
- * @param  {Function} cb Callback used on complete.  Contains a parsedPlaylist and/or err
- */
-
-function fetchAndParsePlaylist(client, url, cb) {
-  // console.log("Fetching: ", url)
-  client.get(url, function(res, err){
-    if (!err) {
-      var decoder         = new TextDecoder();
-      var playlistStr     = decoder.decode(res)
-
-      var srcURL
-      if (url.endsWith('m3u8')) {
-        var urlComps    = url.split('/')
-        var compsStrips = urlComps.slice(2, urlComps.length-1)
-        var hostAndPath = compsStrips.join('/')
-        srcURL          = urlComps[0] + '//' + hostAndPath
-      }
-
-      var parsedPlaylist  = playlist(playlistStr, srcURL)
-      if (parsedPlaylist.info) {
-        cb(parsedPlaylist, null)
-        return
-      }
-    }
-    cb(null, err)
-  })
-}
-
-/**
- * fetchAndParseSegment - Fetches a media segment from a URL and runs it through the atom parser
- *
- * @param  {BOFH} client Client used to make the GET request through
- * @param  {String} url  URL of the media segment
- * @param  {Function} cb Callback used on complete.  Contains Uint8Array, parsed atom, error
- */
-function fetchAndParseSegment(client, url, cb) {
-  // console.log("Fetching: ", url)
-  client.get(url, function(res, err){
-    if (!err) {
-      var uint8buffer = new Uint8Array(res)
-      var tree        = atomPaser(uint8buffer)
-      cb(uint8buffer, tree, null)
-      return
-    }
-    cb(null, null, err)
-  })
-}
-
-
-Plainview.prototype.setup = function(cb) {
-  var pv = this
-  if (this.playlistURL) {
-    fetchAndParsePlaylist(this._bofh, this.playlistURL, function(playlist, err){
-      if (playlist) {
-        pv.parsedPlaylist = playlist
-        cb()
-        return
-      }
+function primeForStreaming(plainview, cb) {
+  if (plainview.fetcher) {
+    plainview.fetcher.start(function(err) {
+      if (!err) { plainview.segments = plainview.fetcher.segmentFetchIterator() }
       cb(err)
     })
+  } else {
+    cb('Could not fetch playlist')
   }
 }
 
+Plainview.prototype.setup = function() {
+  var pv = this
+  return new Promise((resolve, reject) => {
+    primeForStreaming(pv, function(err){
+      if (err) {
+        reject(err)
+      } else {
+        resolve()
+      }
+    })
+  })
+}
+
+function fetchNextSegment(pv) {
+  return new Promise((resolve, reject) => {
+    if (pv.segments) {
+      var nextSegmentFetch = pv.segments.next()
+      nextSegmentFetch.then(function(atom){
+        resolve(atom)
+      }).catch(function(err){
+        reject(err)
+      })
+    } else {
+      reject('Segment iterator not present')
+    }
+  })
+}
 
 /**
  * Plainview.prototype.configureMedia - Configures the player using media info form actual a/v stream
@@ -129,114 +121,47 @@ Plainview.prototype.setup = function(cb) {
  *
  * @param  {Function} cb Callback that gets executed when configureMedia is complete
  */
-Plainview.prototype.configureMedia = function(cb) {
+Plainview.prototype.configureMedia = function() {
   var pv = this
-  if (pv.parsedPlaylist) {
-    if (pv.parsedPlaylist.segments) {
-      var segments = pv.parsedPlaylist.segments.filter(function(s) { if(s.isIndex) { return s }})
-      if (segments.length > 0) {
-        var segment = segments[0]
-        fetchAndParseSegment(pv._bofh, segment.url, function(payload, tree, err){
-          if (err) {
-            cb(err)
-            return
-          }
-
-          createSourceBuffer(pv, payload, tree, function(err){
-            pv.currentSegmentIndex = segments.indexOf(segment)
-            cb(err)
-          })
-          return
-        })
-        return
-      } else { cb('Initialization Segment not present') }
-    } else { cb('Playlist has no segments') }
-  } else { cb('Playlist not present') }
+  return new Promise((resolve, reject) => {
+    fetchNextSegment(pv).then(function(atom){
+      createSourceBuffer(pv, atom, function(ms, err){
+        resolve(ms)
+      })
+    }).catch(function(err){
+      reject(err)
+    })
+  })
 }
 
-// TODO: Replace with iterator once we prove this works
-function nextSegment(pv) {
-  if (pv.parsedPlaylist) {
-    if (pv.parsedPlaylist.segments) {
-      if (typeof pv.currentSegmentIndex == 'number') {
-        var nextIndex = pv.currentSegmentIndex + 1
-        if (pv.parsedPlaylist.segments.length >= nextIndex) {
-          return [nextIndex, pv.parsedPlaylist.segments[nextIndex]]
-        }
-      }
-    }
-  }
-
-  return null
-}
-
-function startPlaying(pv, cb) {
-  var ms = pv.mediaSource
-  if (ms) {
-    loadNextSegment(pv, function(e) {
-      if (!e) {
-        cb(null);
-        startPlaying(pv);
+function startPlaying(pv) {
+  var segmentFetch
+  while (segmentFetch = pv.segments.next()) {
+    segmentFetch.then(function(atom){
+      var sourceBuffer = pv.mediaSource.sourceBuffers[0]
+      if (sourceBuffer.updating) {
+        pv.segmentQueue.push(atom.payload)
       } else {
-        console.log('failed in recursive play');
+        sourceBuffer.appendBuffer(atom.payload)
       }
+    }).catch(function(err){
+      console.log(err);
     })
-
-  } else { cb('MediaSource not present') }
-}
-
-function loadNextSegment(pv, cb) {
-  console.log('Loading next segment...');
-  var next = nextSegment(pv)
-  if (next) {
-    var nextIdx = next[0]
-    var segment = next[1]
-    fetchAndParseSegment(pv._bofh, segment.url, function(payload, atom, err) {
-      if (err) { cb(err); return }
-
-      var buffer = new Uint8Array(payload)
-      console.log(pv.player.error);
-      pv.mediaSource.sourceBuffers[0].appendBuffer(buffer)
-      pv.currentSegmentIndex = nextIdx
-      cb(null)
-    })
-  } else {
-    console.log('No next segment.');
   }
 }
 
 Plainview.prototype.play = function(cb) {
-  if (this.mediaSource) {
-    startPlaying(this, function(e){ cb(e) })
-  } else {
-
-    var pv = this
-    pv.setup(function(err) {
-      if (err) {
-        cb(err)
-        return
-      }
-
-      pv.configureMedia(function(err){
-        if (err) {
-          cb(err)
-          return
-        }
-
-        var duration = pv.parsedPlaylist.segments
-        .filter(function(s) { if (!s.isIndex) { return s }})
-        .map(function(s) { return s.duration })
-        .reduce(function(a, c) { return a + c })
-
-        startPlaying(pv, function(e){
-          cb(e)
-        })
-
-        return
-      })
-    })
-  }
+  var pv = this
+  pv.setup().then(function(){
+    return pv.configureMedia()
+  }).then(function(ms){
+    var parsedPlaylist = pv.fetcher.parsedPlaylist
+    pv.skinner.addPlaylist(parsedPlaylist)
+    startPlaying(pv)
+    cb()
+  }).catch(function(err){
+    cb(err)
+  })
 }
 
-exports.Plainview = Plainview
-module.exports = {Plainview: Plainview}
+module.exports = Plainview
