@@ -1,6 +1,6 @@
 {
   "name": "plainview",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "An m3u8 (HLS playlist) and mp4 parser",
   "main": "index.js",
   "scripts": {
