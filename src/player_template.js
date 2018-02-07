@@ -40,11 +40,28 @@ function restartButton() {
 }
 
 function fullscreenButton() {
-  return imageWith('iVBORw0KGgoAAAANSUhEUgAAADYAAAA2CAYAAACMRWrdAAAABGdBTUEAALGPC/xhBQAAALNJREFUaAXt2dEKhSAQRdHr/f9/rh6FmBhQYZTlkwxlx72lQtv1tN9ga08bHOJ1+2iu/2vEQwomtptIxhgrQsBSLCIiHeNYYy37hV/xd5HG312YzXusMRPrVsMWXca20NSFZKyDoYsAAggggAACCCCAAAIIIIAAAggggMBcAg4l5vJcP5oN0/WM5z7hWGPpl8cXzxWnndmTyyjXscZMLFJetc5YVTNRLsYiMlXrjFU1E+W6ARvpIC9jq9irAAAAAElFTkSuQmCC')
+  return imageWith('iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABGdBTUEAALGPC/xhBQAAAQlJREFUaAXtmjEKAjEQRROxsBIExcrG0qN4Fc9l5Rm8gngFsbGxFOx00n4TlpiVWeGlm0lm5+/7hF02G15t4xh6HCbl/K2cUY86XC/FjbjizzQfZ3IptS3kNX3XRGO8s/ppxzVmNr/XNTFtro9kjFFzQ4lN7tK03FQPe0SJeMc44u2A9scRJeId44i3A9ofR5SId5zetQ7eIir7P/9Qc+UtshwCEIAABCAAAQhAAAIQgAAEIBDSscJVOdipwkpzQ4lN78K0nFQP5yNKxDvmA523A9ofR5SId4wj3g5o/+wPA/bQ2ejCQvywh+elMFedtr5rK5p0FM6z81bcMvg7KEu1Iclmb4D3k9I3l5EbOnwhcKkAAAAASUVORK5CYII=')
 }
 
-function imageTag(payload) {
-  return '<img height="12" width="12" src="' + payload + '" />'
+function imageTag(payload, width, height, alt) {
+  var w = 12
+  var h = 12
+  if (width) { w = width }
+  if (height) { h = height }
+
+  var imgStr = '<img width="'
+  imgStr += w
+  imgStr += '" height="'
+  imgStr += h
+  imgStr += '" src="'
+  imgStr += payload
+  imgStr += '"'
+
+  if (alt) { imgStr += 'alt="' + alt + '"' }
+
+  imgStr += ' />'
+
+  return imgStr
 }
 
 module.exports = {
@@ -52,5 +69,5 @@ module.exports = {
   playButton: imageTag(playButton()),
   pauseButton: imageTag(pauseButton()),
   restartButton: imageTag(restartButton()),
-  fullscreenButton: imageTag(fullscreenButton())
+  fullscreenButton: function(w, h, alt) { return imageTag(fullscreenButton(), w, h, alt) }
 }

@@ -20,7 +20,7 @@ test('that we can fetch vod playlists', t=>{
 })
 
 test('that we can iterator fetches for playlist segments', t=> {
-  t.plan(14)
+  t.plan(15)
   t.ok(client, 'client was present')
 
   var iterator = client.segmentFetchIterator()
@@ -50,8 +50,9 @@ test('that we can iterator fetches for playlist segments', t=> {
   promise2.then(function(atom) {
     t.ok(1, 'fetched the next segment')
     t.ok(atom, 'atom was present')
-    t.ok(atom.root, 'it is indeed a parsed atom')
-    t.equals(atom.root[0].name, 'moof', 'got a moof')
+    t.notOk(atom.root, 'this is not a parsed atom.  good')
+    t.ok(atom.payload, 'it is a data segment.  payload present')
+    t.equals(atom.payload.byteLength, 1919004, 'data segment length correct')
   }).catch(function(err){
     t.fail('We failed to fetch the atom')
   })

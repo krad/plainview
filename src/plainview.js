@@ -158,7 +158,6 @@ Plainview.prototype.play = function(cb) {
     var parsedPlaylist = pv.fetcher.parsedPlaylist
     pv.skinner.addPlaylist(parsedPlaylist)
     startPlaying(pv)
-    pv.player.play()
     cb()
   }).catch(function(err){
     cb(err)

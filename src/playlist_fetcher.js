@@ -79,8 +79,12 @@ PlaylistFetcher.prototype.segmentFetchIterator = function() {
         if (nextSegment) {
           return new Promise((resolve, reject) => {
             fetcher.fetch(nextSegment).then(function(segmentData){
-              var parsedAtom = parseAtom(segmentData)
-              resolve(parsedAtom)
+              if (nextSegment.isIndex) {
+                var parsedAtom = parseAtom(segmentData)
+                resolve(parsedAtom)
+              } else {
+                resolve({payload: segmentData})
+              }
             }).catch(function(err){
               reject(err)
             })

@@ -13,8 +13,8 @@ function skinPlayer(skinner, player) {
     playerControls.setAttribute('class', 'player-controls')
     playerControls.innerHTML = playerTemplate.html
 
-    videoWrapper.addEventListener('mouseenter', function(e){ unfade(playerControls) })
-    videoWrapper.addEventListener('mouseleave', function(e){ fade(playerControls) })
+    // videoWrapper.addEventListener('mouseenter', function(e){ unfade(playerControls) })
+    // videoWrapper.addEventListener('mouseleave', function(e){ fade(playerControls) })
 
     // Place the wrapper/controls after the video tag
     // then remove video tag and insert it into the wrapper
@@ -56,7 +56,7 @@ function skinPlayer(skinner, player) {
       }
 
       if (button.id == 'fs') {
-        button.innerHTML = playerTemplate.fullscreenButton
+        button.innerHTML = playerTemplate.fullscreenButton(18, 18, 'Fullscreen')
       }
 
       if (button.id == 'timecode') {
