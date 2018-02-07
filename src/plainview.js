@@ -53,6 +53,9 @@ function createSourceBuffer(plainview, segment, cb) {
 
             sourceBuffer.addEventListener('updateend', function() {
               if (plainview.segmentQueue.length) {
+                // console.log(plainview.player.videoHeight);
+                // console.log(plainview.player.videoWidth);
+
                 sourceBuffer.appendBuffer(plainview.segmentQueue.shift());
               }
             }, false)

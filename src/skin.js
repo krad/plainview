@@ -11,7 +11,15 @@ function skinPlayer(skinner, player) {
     var playerControls = document.createElement('div')
     videoWrapper.setAttribute('class', 'player-wrapper')
     playerControls.setAttribute('class', 'player-controls')
-    playerControls.innerHTML = playerTemplate
+    playerControls.innerHTML = playerTemplate.html
+
+    videoWrapper.addEventListener('mouseenter', function(e){
+      unfade(playerControls)
+    })
+
+    videoWrapper.addEventListener('mouseleave', function(e){
+      fade(playerControls)
+    })
 
     // Place the wrapper/controls after the video tag
     // then remove video tag and insert it into the wrapper
@@ -21,10 +29,10 @@ function skinPlayer(skinner, player) {
     videoWrapper.insertAdjacentElement('afterbegin', player)
 
     // Style the video wrapper and controls wrapper
-    videoWrapper.style.cssText    = 'display: block;'
-    videoWrapper.style.cssText    += 'width: 100%; height:100%;'
-    playerControls.style.cssText  = 'margin-top: auto; background-color: rgba(0, 0, 0, 0.3);'
-    player.style.cssText          = 'width:100%; height:100%;'
+    // videoWrapper.style.cssText    = 'position: relative;'
+    videoWrapper.style.cssText    += 'display: flex; justify-content: flex-end;  flex-direction: column;'
+    playerControls.style.cssText  = 'background-color: rgba(0, 0, 0, 0.3);'
+    player.style.cssText          = 'width:100% !important; height: auto !important; background:#000;'
 
     // Style the progress bar
     // pale (Alice blue) EAF6FD
@@ -44,7 +52,15 @@ function skinPlayer(skinner, player) {
       button.style.cssText = 'padding: 16px;'
       button.style.cssText += 'background:none;'
       button.style.cssText += 'color:#fff;'
-      button.style.cssText += 'border-color: rgba(0, 0, 0, 0.3);'
+      button.style.cssText += 'border-color: rgba(0, 0, 0, 0.5);'
+
+      if (button.id == 'playpause') {
+        button.innerHTML = playerTemplate.playButton
+      }
+
+      if (button.id == 'fs') {
+        button.innerHTML = playerTemplate.fullscreenButton
+      }
 
       if (button.id == 'timecode') {
         skinner.timecode = button
@@ -60,30 +76,48 @@ function skinPlayer(skinner, player) {
     var rightControls = playerControls.querySelector('.right-controls')
     rightControls.style.cssText = 'float: right;'
 
-    // Remove poster from the video tag and set as a background image on the video wrapper
-    if (player.poster) {
-      var posterURL = 'url(' + player.poster + ');'
-      videoWrapper.style.cssText += 'background:' + posterURL
-      videoWrapper.style.cssText += 'background-size: contain;'
-      videoWrapper.style.cssText += 'background-repeat:no-repeat;'
-      player.removeAttribute('poster')
-    }
-
     // Wire up the controls to their respective events
     configurePlayerControls(player)
   }
 
 }
 
+function fade(element) {
+  var opacity = 1
+  var timer = setInterval(function(){
+    if (opacity <= 0.1) {
+      clearInterval(timer)
+      element.style.display = 'none'
+    }
+    element.style.opacity = opacity
+    element.style.filter = 'alpha(opacity=' + opacity * 100 + ")"
+    opacity -= opacity * 0.1
+  }, 50)
+}
+
+function unfade(element) {
+  var opacity = 0.1
+  element.style.display = 'block'
+  var timer = setInterval(function(){
+    if (opacity >= 1) {
+      clearInterval(timer)
+    }
+    element.style.opacity = opacity
+    element.style.filter = 'alpha(opacity=' + opacity * 100 + ')'
+    opacity += opacity * 0.1
+  })
+}
+
 function configurePlayerControls(player) {
+  var playpause = document.getElementById('playpause')
   document.getElementById('playpause').addEventListener('click', function(event){
-    if (event.target.dataset.state == 'play') {
-      event.target.dataset.state = 'pause'
-      event.target.innerHTML = 'Pause'
+    if (playpause.dataset.state == 'play') {
+      playpause.dataset.state = 'pause'
+      playpause.innerHTML     = playerTemplate.pauseButton
       player.play()
     } else {
-      event.target.dataset.state = 'play'
-      event.target.innerHTML = 'Play'
+      playpause.dataset.state = 'play'
+      playpause.innerHTML     = playerTemplate.playButton
       player.pause()
     }
   }, false)
@@ -98,14 +132,6 @@ function configurePlayerControls(player) {
       event.target.innerHTML = 'Mute'
       player.muted = false
     }
-  }, false)
-
-  document.getElementById('volinc').addEventListener('click', function(event){
-    console.log('volinc');
-  }, false)
-
-  document.getElementById('voldec').addEventListener('click', function(event){
-    console.log('voldec');
   }, false)
 
   document.getElementById('fs').addEventListener('click', function(event){
@@ -179,6 +205,7 @@ Skinner.prototype.update = function(event) {
 
 Skinner.prototype.addPlaylist = function(parsedPlaylist) {
   if (parsedPlaylist) {
+
     this.parsedPlaylist = parsedPlaylist
     if (this.timecode) {
       updateDisplayTime(this.timecode,
