@@ -34,6 +34,7 @@ function skinPlayer(skinner, player) {
     player.style.cssText          =  'width: 100% !important;'
     player.style.cssText          += 'height: auto !important;'
     player.style.cssText          += 'background:#000;'
+    player.style.cssText          += 'display: block;'
 
     // Style the progress bar
     var progressWrapper = videoWrapper.querySelector('.progress')
@@ -52,7 +53,8 @@ function skinPlayer(skinner, player) {
       button.style.cssText += 'background: rgba(0, 0, 0, 0.0) !important;'
       button.style.cssText += 'color:#fff !important;'
       button.style.cssText += 'border-color: rgba(0, 0, 0, 0.5) !important;'
-      button.style.csstext += 'border-style: solid !important;'
+      button.style.cssText += 'border-style: solid !important;'
+      button.style.cssText += 'height: 45px;'
 
       if (button.id == 'playpause') {
         button.innerHTML = playerTemplate.playButton

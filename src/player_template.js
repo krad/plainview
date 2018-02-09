@@ -13,6 +13,7 @@ function html() {
  </span>
 
  <style media="screen">
+  .progress { margin:0 !important; padding: 0 !important; }
   progress { color: #209cee !important; }
   progress::-moz-progress-bar { background: #209cee !important;}
   progress::-webkit-progress-value { background: #209cee !important; }
