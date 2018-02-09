@@ -24,14 +24,12 @@ function skinPlayer(skinner, player) {
     videoWrapper.insertAdjacentElement('afterbegin', player)
 
     // Style the video wrapper and controls wrapper
-    // videoWrapper.style.cssText    = 'position: relative;'
     videoWrapper.style.cssText    += 'position: relative !important;'
     playerControls.style.cssText  =  'position: absolute; bottom:0 !important;'
     playerControls.style.cssText  += 'width:100% !important;'
     playerControls.style.cssText  += 'height:48px !important;'
     playerControls.style.cssText  += 'margin:0 !important;'
     playerControls.style.cssText  += 'padding:0 !important;'
-    playerControls.style.cssText  += 'display: inline-table'
     playerControls.style.cssText  +=  'background-color: rgba(0, 0, 0, 0.5) !important;'
     player.style.cssText          =  'width: 100% !important;'
     player.style.cssText          += 'height: auto !important;'
