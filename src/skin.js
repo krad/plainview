@@ -25,24 +25,26 @@ function skinPlayer(skinner, player) {
 
     // Style the video wrapper and controls wrapper
     // videoWrapper.style.cssText    = 'position: relative;'
-    videoWrapper.style.cssText    += 'position: relative;'
+    videoWrapper.style.cssText    += 'position: relative !important;'
     playerControls.style.cssText  =  'position: absolute; bottom:0 !important;'
-    playerControls.style.cssText  += 'width: 100%;'
+    playerControls.style.cssText  += 'width: 100% !important; height:48px !important'
     playerControls.style.cssText  += 'margin:0 !important;'
     playerControls.style.cssText  += 'padding:0 !important;'
-    playerControls.style.cssText  +=  'background-color: rgba(0, 0, 0, 0.5);'
+    playerControls.style.cssText  +=  'background-color: rgba(0, 0, 0, 0.5) !important;'
     player.style.cssText          =  'width: 100% !important;'
     player.style.cssText          += 'height: auto !important;'
-    player.style.cssText          += 'background:#000;'
-    player.style.cssText          += 'display: block;'
+    player.style.cssText          += 'background:#000 !important;'
+    player.style.cssText          += 'display: block !important;'
 
     // Style the progress bar
     var progressWrapper = videoWrapper.querySelector('.progress')
     var progressBar = progressWrapper.querySelector('progress')
-    progressWrapper.style.cssText = 'width:100%;';
-    progressBar.style.cssText     = 'height: 2px; width:100%; appearance: none; -webkit-appearance: none;'
-    progressBar.style.cssText     += 'color: #209cee;'
-    progressBar.style.cssText     += 'background-color: #EAF6FD;'
+    progressWrapper.style.cssText = 'width:100%; margin:0 !important; padding: 0 !important;';
+    progressBar.style.cssText     = 'height: 2px !important; width:100% !important;'
+    progressBar.style.cssText     += 'appearance: none; -webkit-appearance: none;'
+    progressBar.style.cssText     += 'color: #209cee !important;'
+    progressBar.style.cssText     += 'margin: 0 !important; padding: 0 !important;'
+    progressBar.style.cssText     += 'background-color: #EAF6FD !important;'
 
     skinner.progressBar = progressBar
 
@@ -54,7 +56,7 @@ function skinPlayer(skinner, player) {
       button.style.cssText += 'color:#fff !important;'
       button.style.cssText += 'border-color: rgba(0, 0, 0, 0.5) !important;'
       button.style.cssText += 'border-style: solid !important;'
-      button.style.cssText += 'height: 45px;'
+      button.style.cssText += 'height: 45px !important;'
 
       if (button.id == 'playpause') {
         button.innerHTML = playerTemplate.playButton
@@ -69,9 +71,9 @@ function skinPlayer(skinner, player) {
       }
 
       if (i == buttons.length - 1) {
-        button.style.cssText += 'border-width: 0px 0px 0px 1px;'
+        button.style.cssText += 'border-width: 0px 0px 0px 1px !important;'
       } else {
-        button.style.cssText += 'border-width: 0px 1px 0px 0px'
+        button.style.cssText += 'border-width: 0px 1px 0px 0px !important;'
       }
     }
 

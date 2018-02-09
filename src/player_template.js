@@ -15,10 +15,14 @@ function html() {
  <style media="screen">
   .progress { margin:0 !important; padding: 0 !important; }
   progress { color: #209cee !important; }
-  progress::-moz-progress-bar { background: #209cee !important;}
+  progress::-moz-progress-bar { background: #209cee !important; margin: 0 !important; padding: 0 !important; }
   progress::-webkit-progress-value { background: #209cee !important; }
   progress[aria-valuenow]:before  { background: #209cee !important; }
-  #progress-bar { padding:0 !important; margin: 0 !important;}
+  #progress-bar {
+    padding:0 !important;
+    margin: 0 !important;
+  }
+
   .player-controls button:focus { outline: none !important; }
   .player-controls button:active { outline: none !important; }
  </style>
