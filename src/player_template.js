@@ -18,7 +18,7 @@ function html() {
   .progress {
      margin: 0 !important;
      padding: 0 !important;
-     height:2px !important
+     height:21px !important
    }
 
    progress {
