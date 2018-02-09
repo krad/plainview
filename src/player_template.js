@@ -18,10 +18,13 @@ function html() {
   .progress {
      margin: 0 !important;
      padding: 0 !important;
-     height:0 !important
+     height:2px !important
    }
 
-   progress { color: #209cee !important; }
+   progress {
+     color: #209cee !important;
+     height:2px !important;
+   }
 
    .progress:not(:last-child) {
      margin:0 !important;
