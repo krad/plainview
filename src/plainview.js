@@ -42,6 +42,7 @@ function createSourceBuffer(plainview, segment, cb) {
       if (MediaSource.isTypeSupported(segment.codecsString)) {
         var ms = new MediaSource()
         if (plainview.player) {
+          var player = plainview.player
           var codecs = segment.codecsString
 
           player.addEventListener('timeupdate', function(e){
