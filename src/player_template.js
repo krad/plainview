@@ -13,12 +13,13 @@ function html() {
  </span>
 
  <style media="screen">
-  progress { color: #209cee }
-  progress::-moz-progress-bar { background: #209cee;}
-  progress::-webkit-progress-value { background: #209cee; }
-  progress[aria-valuenow]:before  { background: #209cee; }
-  .player-controls button:focus { outline: none; }
-  .player-controls button:active { outline: none; }
+  progress { color: #209cee !important; }
+  progress::-moz-progress-bar { background: #209cee !important;}
+  progress::-webkit-progress-value { background: #209cee !important; }
+  progress[aria-valuenow]:before  { background: #209cee !important; }
+  #progress-bar { padding:0 !important; margin: 0 !important;}
+  .player-controls button:focus { outline: none !important; }
+  .player-controls button:active { outline: none !important; }
  </style>
  `
 }

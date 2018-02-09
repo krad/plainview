@@ -26,7 +26,10 @@ function skinPlayer(skinner, player) {
     // Style the video wrapper and controls wrapper
     // videoWrapper.style.cssText    = 'position: relative;'
     videoWrapper.style.cssText    += 'position: relative;'
-    playerControls.style.cssText  =  'position: absolute; bottom:0; width: 100%'
+    playerControls.style.cssText  =  'position: absolute; bottom:0 !important;'
+    playerControls.style.cssText  += 'width: 100%;'
+    playerControls.style.cssText  += 'margin:0 !important;'
+    playerControls.style.cssText  += 'padding:0 !important;'
     playerControls.style.cssText  +=  'background-color: rgba(0, 0, 0, 0.5);'
     player.style.cssText          =  'width: 100% !important;'
     player.style.cssText          += 'height: auto !important;'
@@ -45,11 +48,11 @@ function skinPlayer(skinner, player) {
     var buttons = playerControls.querySelectorAll('button')
     for (var i = 0; i < buttons.length; i++) {
       var button = buttons[i]
-      button.style.cssText = 'padding: 16px;'
-      button.style.cssText += 'background: rgba(0, 0, 0, 0.0);'
-      button.style.cssText += 'color:#fff;'
-      button.style.cssText += 'border-color: rgba(0, 0, 0, 0.5);'
-      button.style.csstext += 'border-style: solid;'
+      button.style.cssText = 'padding: 16px !important;'
+      button.style.cssText += 'background: rgba(0, 0, 0, 0.0) !important;'
+      button.style.cssText += 'color:#fff !important;'
+      button.style.cssText += 'border-color: rgba(0, 0, 0, 0.5) !important;'
+      button.style.csstext += 'border-style: solid !important;'
 
       if (button.id == 'playpause') {
         button.innerHTML = playerTemplate.playButton
