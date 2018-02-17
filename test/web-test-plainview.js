@@ -4,19 +4,18 @@ var plainview = require('../src/plainview')
 var html = `
 <html>
   <body>
-    <video id='player'>
+    <video id='playerx'>
       <source src="/vod.m3u8" type="application/x-mpegURL">
     </video>
   </body>
 </html>
 `
 
-document.body.innerHTML = html
-
-// test('that we can setup the document contents', t=> {
-//   t.plan(1)
-//   t.ok(document.getElementById('player'), 'found the player')
-// })
+test('that we can setup the document contents', t=> {
+  document.body.innerHTML = html
+  t.plan(1)
+  t.ok(document.getElementById('playerx'), 'found the player')
+})
 //
 // var pv
 // test('that we can setup a plainview object', t=> {

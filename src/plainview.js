@@ -8,9 +8,11 @@ var atomPaser       = require('./atoms')
 var bofh            = require('./bofh')
 var playlistFetcher = require('./playlist_fetcher')
 var skinner         = require('./skin')
+var helpers         = require('./video_tag_helpers')
 
 class Plainview {
   constructor(playerID) {
+    this.player =
     // getPlaylistURLFromMediaTag(this, playerID)
     this.skinner = new skinner(playerID)
     this._bofh = new bofh.BOFH()
