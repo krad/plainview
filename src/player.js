@@ -46,6 +46,14 @@ class Player {
     this.mediaSource.addEventListener('sourceopen', e => {
       const sourceBuffer = mediaSource.addSourceBuffer(this.codecs);
     })
+
+    this.mediaSource.addEventListener('onsourceclose', e => {
+      console.log('onsourceclode');
+    })
+
+    this.mediaSource.addEventListener('onsourceended', e => {
+      console.log('onsourceended');
+    })
     AVElement.src = window.URL.createObjectURL(this.mediaSource);
   }
 

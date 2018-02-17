@@ -1,33 +1,73 @@
 var playerTemplate  = require('./player_template')
 var timeCodeHelpers = require('./time_code_helpers')
 
-function configurePlayerControls(player) {
-  var playpause = document.getElementById('playpause')
-  document.getElementById('playpause').addEventListener('click', function(event){
-    if (playpause.dataset.state == 'play') {
-      playpause.dataset.state = 'pause'
-      playpause.innerHTML     = playerTemplate.pauseButton
-      player.play()
-    } else {
-      playpause.dataset.state = 'play'
-      playpause.innerHTML     = playerTemplate.playButton
-      player.pause()
+class Skinner {
+  constructor(player) {
+    this.player = player
+    this.CONTROLS = {
+      'playpause': {
+        states: [['play', {template: playerTemplate.playButton, onToggle: (x) => { x.pause() }}],
+                 ['pause', {template: playerTemplate.pauseButton, onToggle: (x) => { x.play() }}]]
+      },
+      'mute': {
+        states: [['mute', {template: "Mute", onToggle: (x) => { x.muted = false }}],
+                 ['unmute', {template: "Unmute", onToggle: (x) => { x.muted = true }}]]
+      },
+      'fs': {
+        onToggle: (x) => { requestFullscreen(x) },
+      },
     }
-  }, false)
+  }
 
-  document.getElementById('mute').addEventListener('click', function(event){
-    if (event.target.dataset.state == 'mute') {
-      event.target.dataset.state = 'unmute'
-      event.target.innerHTML = 'Unmute'
-      player.muted = true
-    } else {
-      event.target.dataset.state = 'mute'
-      event.target.innerHTML = 'Mute'
-      player.muted = false
+  skin() {
+    removePlayerControls(this.player)
+    const wrappers = wrapVideoWithPlayerControls(this.player)
+    stylePlayer(this.player)
+
+    this.videoWrapper   = wrappers[0]
+    this.playerControls = wrappers[1]
+
+    this.progressBar = styleProgressBar(this.videoWrapper)
+    this.timecode    = styleButtons(this.playerControls)
+    styleRightControls(this.playerControls)
+
+    configurePlayerControls(this.playerControls, this.CONTROLS, this.player)
+  }
+}
+
+const configurePlayerControls = (playerControls, CONTROLS, player) => {
+  var keys = Object.keys(CONTROLS)
+  for (var i = 0; i < keys.length; i++) {
+    const key = keys[i]
+    const element = playerControls.querySelector('#' + key)
+    const entry   = CONTROLS[key]
+    const states  = entry.states
+    if (states) {
+      const stateA = states[0]
+      const stateB = states[1]
+      element.addEventListener('click', e => {
+        if (element.dataset.state == stateA[0]) {
+          element.dataset.state = stateB[0]
+          element.innerHTML     = stateB[1].template
+          if (stateB[1].onToggle) { stateB[1].onToggle(player) }
+        } else {
+          element.dataset.state = stateA[0]
+          element.innerHTML     = stateA[1].template
+          if (stateA[1].onToggle) { stateA[1].onToggle(player) }
+        }
+      })
     }
-  }, false)
 
-  document.getElementById('fs').addEventListener('click', function(event){
+    const toggle = entry.onToggle
+    if (toggle) {
+      element.addEventListener('click', e => {
+        toggle(player)
+      })
+    }
+  }
+}
+
+const requestFullscreen = (player) => {
     if (player.requestFullscreen) {
       player.requestFullscreen();
     } else if (player.mozRequestFullScreen) {
@@ -35,8 +75,6 @@ function configurePlayerControls(player) {
     } else if (player.webkitRequestFullscreen) {
       player.webkitRequestFullscreen(); // Chrome and Safari
     }
-  }, false)
-
 }
 
 function updateProgressBar(skinner, player, event) {
@@ -144,22 +182,6 @@ const styleButtons = (playerControls) => {
 const styleRightControls = (playerControls) => {
   var rightControls = playerControls.querySelector('.right-controls')
   rightControls.style.cssText = 'float: right;'
-}
-
-class Skinner {
-  constructor(player) {
-    this.player = player
-  }
-
-  skin() {
-    removePlayerControls(this.player)
-    const wrappers = wrapVideoWithPlayerControls(this.player)
-    stylePlayer(this.player)
-
-    this.progressBar = styleProgressBar(wrappers[0])
-    this.timecode    = styleButtons(wrappers[1])
-    styleRightControls(wrappers[1])
-  }
 }
 
 module.exports = Skinner
