@@ -44,25 +44,22 @@ class Plainview {
     .then(_ => {
       this._skinner.setTime(this.AVElement.currentTime, this._player.duration)
 
-      this.AVElement.addEventListener('play', x => {
-        console.log(x, 'played');
-      })
-
-      this.AVElement.addEventListener('pause', x => {
-        console.log(x, 'paused');
-      })
-
       this.AVElement.addEventListener('timeupdate', x => {
         this._skinner.setTime(this.AVElement.currentTime, this._player.duration)
       })
 
-      this.AVElement.addEventListener('seeked', x => {
-        console.log(x, 'seeked');
+      this.AVElement.addEventListener('play', x => {
+        this._skinner.setPauseButtonToPause()
       })
 
-      this.AVElement.addEventListener('stalled', x => {
-        console.log(x, 'stalled');
+      this.AVElement.addEventListener('ended', x => {
+        this._skinner.setPauseButtonToRestart()
       })
+
+      // TODO: Handle these events
+      this.AVElement.addEventListener('pause', x => { })
+      this.AVElement.addEventListener('seeked', x => { })
+      this.AVElement.addEventListener('stalled', x => { })
 
       if(cb) { cb() }
     }).catch(err => {
@@ -70,27 +67,10 @@ class Plainview {
     })
   }
 
-  play() {
-    this._player.createMediaSource(this.AVElement)
-    .then(_ => {
-      this.AVElement.play()
-    }).catch(err => {
-      console.log('problem playing');
-    })
-  }
-
-  pause() {
-    console.log('pause');
-  }
-
-  set muted(value) {
-       this.AVElement.muted = value
-  }
-
-  requestFullscreen() {
-    requestFullscreen(this.AVElement)
-  }
-
+  play()              { this._player.play(this.AVElement) }
+  pause()             { this._player.pause(this.AVElement) }
+  set muted(value)    { this.AVElement.muted = value }
+  requestFullscreen() { requestFullscreen(this.AVElement) }
 }
 
 const requestFullscreen = (player) => {

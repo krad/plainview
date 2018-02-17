@@ -31,7 +31,18 @@ class Skinner {
     this.timecode    = styleButtons(this.playerControls)
     styleRightControls(this.playerControls)
 
-    configurePlayerControls(this.playerControls, this.CONTROLS, delegate)
+    this.buttons = configurePlayerControls(this.playerControls, this.CONTROLS, delegate)
+  }
+
+  setPauseButtonToRestart() {
+    const playpause = this.buttons.filter(x => x.id == 'playpause')
+    if (playpause[0]) {
+      playpause[0].innerHTML = playerTemplate.restartButton
+    }
+  }
+
+  setPauseButtonToPause() {
+
   }
 
   setTime(currentTime, duration) {
@@ -42,6 +53,7 @@ class Skinner {
 
 const configurePlayerControls = (playerControls, CONTROLS, player) => {
   var keys = Object.keys(CONTROLS)
+  var results = []
   for (var i = 0; i < keys.length; i++) {
     const key = keys[i]
     const element = playerControls.querySelector('#' + key)
@@ -69,7 +81,9 @@ const configurePlayerControls = (playerControls, CONTROLS, player) => {
         toggle(player)
       })
     }
+    results.push(element)
   }
+  return results
 }
 
 // Remove native controls

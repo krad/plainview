@@ -43,6 +43,28 @@ class Player {
     })
   }
 
+  play(AVElement) {
+    if (this.mediaSource) {
+      AVElement.play()
+      .then(_ => { })
+      .catch(err => {
+        console.log('MediaSourcePresent play error', err);
+      })
+    } else {
+      this.createMediaSource(AVElement)
+      .then(_ => {
+        return AVElement.play()
+      }).then(_ => { })
+      .catch(err => {
+        console.log('problem playing', err);
+      })
+    }
+  }
+
+  pause(AVElement) {
+    AVElement.pause()
+  }
+
   createMediaSource(AVElement) {
     return new Promise((resolve, reject) => {
       this.mediaSource = new MediaSource()
