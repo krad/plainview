@@ -8,17 +8,12 @@
  var playlist   = require('./playlist')
  var atomParser = require('./atoms')
 
- const STATES = Object.freeze({
-   new: 0
- })
-
-function PlaylistFetcher(url) {
+const PlaylistFetcher = (url) => {
   this.url   = url
   this._bofh = new bofh.BOFH()
-  this.state = STATES.new
 }
 
-function decodePlaylist(fetcher, data) {
+const decodePlaylist = (fetcher, data) => {
   var decoder         = new TextDecoder();
   var playlistStr     = decoder.decode(data)
 
@@ -38,14 +33,14 @@ function decodePlaylist(fetcher, data) {
   return null
 }
 
-function parseAtom(segmentData) {
+const parseAtom = (segmentData) => {
   var uint8buffer = new Uint8Array(segmentData)
   var atom        = atomParser(uint8buffer)
   atom.payload    = uint8buffer
   return atom
 }
 
-PlaylistFetcher.prototype.start = function(cb) {
+PlaylistFetcher.prototype.start = (cb) => {
   var plf   = this
   var fetch = this._bofh.get(this.url)
 
@@ -57,7 +52,7 @@ PlaylistFetcher.prototype.start = function(cb) {
   })
 }
 
-PlaylistFetcher.prototype.fetch = function(item) {
+PlaylistFetcher.prototype.fetch = (item) => {
   if (typeof item === 'object') {
     if (item.hasOwnProperty('url')) {
       return this._bofh.get(item.url)
@@ -69,7 +64,7 @@ PlaylistFetcher.prototype.fetch = function(item) {
   return null
 }
 
-PlaylistFetcher.prototype.segmentFetchIterator = function() {
+PlaylistFetcher.prototype.segmentFetchIterator = () => {
   if (this.parsedPlaylist) {
     var fetcher  = this
     var iterator = fetcher.parsedPlaylist.segmentIterator()

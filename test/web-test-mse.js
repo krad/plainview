@@ -1,5 +1,7 @@
 var test = require('tape')
 
+var ms = require('../src/media_source')
+
 test('that we have access to browser structures', t=> {
   t.plan(6)
   t.ok(window, 'has a window object')
@@ -31,4 +33,8 @@ test('that we can open a new MediaSource', t=> {
   ms.addEventListener('sourceopen', onSourceOpen.bind(this, vidTag))
   vidTag.src = URL.createObjectURL(ms)
 
+})
+
+test('that we can do stuff with out middleman', t => {
+  
 })

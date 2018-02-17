@@ -9,6 +9,7 @@ var bofh            = require('./bofh')
 var playlistFetcher = require('./playlist_fetcher')
 var skinner         = require('./skin')
 
+
 function Plainview(playerID) {
   if (playerID) {
     getPlaylistURLFromMediaTag(this, playerID)
@@ -36,42 +37,124 @@ function getPlaylistURLFromMediaTag(plainview, playerID) {
   }
 }
 
-function createSourceBuffer(plainview, segment, cb) {
-  if (window.MediaSource) {
-    if (segment.codecsString) {
-      if (MediaSource.isTypeSupported(segment.codecsString)) {
-        var ms = new MediaSource()
-        if (plainview.player) {
-          var player = plainview.player
-          var codecs = segment.codecsString
-
-          player.addEventListener('timeupdate', function(e){
-            plainview.skinner.update(e)
-          }, false);
-
-          ms.addEventListener('sourceopen', function(e){
-            var sourceBuffer = ms.addSourceBuffer(codecs)
-
-            sourceBuffer.addEventListener('updateend', function() {
-              if (plainview.segmentQueue.length) {
-                // console.log(plainview.player.videoHeight);
-                // console.log(plainview.player.videoWidth);
-
-                sourceBuffer.appendBuffer(plainview.segmentQueue.shift());
-              }
-            }, false)
-
-            ms.sourceBuffers[0].appendBuffer(segment.payload);
-            plainview.mediaSource = ms
-
-            cb(ms, null)
-          })
-          plainview.player.src = window.URL.createObjectURL(ms)
-          return
+const checkCodecSupport = (segment) => {
+  return new Promise((resolve, reject) => {
+    if (window.MediaSource) {
+      if (segment.codecsString) {
+        if (MediaSource.isTypeSupported(segment.codecsString)) {
+          resolve(segment.codecsString)
         }
-      } else { cb(null, 'Media format not supported' + segment.codecsString) }
-    } else { cb(null, 'Segment has no media codecs defined') }
-  } else { cb(null, 'MediaSource not present') }
+      } else {
+        reject('Segment had no codec information')
+      }
+    } else {
+      reject('MediaSource unavailable')
+    }
+  })
+}
+
+const getPlayer = (plainview) => {
+  return new Promise((resolve, reject) => {
+    if (plainview.player) {
+      resolve(plainview.player)
+    } else {
+      reject('Did not have player')
+    }
+  })
+}
+
+const getSkinner = (plainview) => {
+  return new Promise((resolve, reject) => {
+    if (plainview.skinner) {
+      resolve(plainview.skinner)
+    } else {
+      reject('Did not have skinner')
+    }
+  })
+}
+
+const configureSkinUpdates = (player, skinner) => {
+  return new Promise((resolve, reject) => {
+    if (skinner.update) {
+        player.addEventListener('timeupdate', skinner.update, flase)
+        resolve(player)
+    } else {
+      reject('No means to update skin')
+    }
+  })
+}
+
+const readyForNextSegment = () => {
+
+}
+
+const createMS = (segment) => {
+  if (segment) {
+      if (!segment.codecsString) { throw 'Segment has no codec information' }
+      if (!segment.payload) { throw 'Segment has no media payload' }
+  }
+
+  var mediaSource = new MediaSource()
+
+  mediaSource.addEventListener('sourceopen', e => {
+    const sourceBuffer = mediaSource.addSourceBuffer(codecs)
+    sourceBuffer.addEventListener('updateend', readyForNextSegment)
+    sourceBuffer.appendBuffer(segment.payload)
+  })
+
+  return mediaSource
+}
+
+const createMediaSource = (codecs, payload, plainview) => {
+  return new Promise((resolve, reject) => {
+    var mediaSource = new MediaSource()
+    mediaSource.addEventListener('sourceopen', function(e){
+
+      var sourceBuffer = mediaSource.addSourceBuffer(codecs)
+      sourceBuffer.addEventListener('updateend', function() {
+        if (plainview.segmentQueue.length > 0) {
+          sourceBuffer.appendBuffer(plainview.segmentQueue.shift());
+        }
+      }, false)
+
+      sourceBuffer.appendBuffer(segment.payload)
+      plainview.mediaSource = mediaSource
+
+      resolve(mediaSource)
+
+    }, false)
+
+    if (!mediaSource) { reject('Could not create MediaSource') }
+  })
+}
+
+function configureSourceBuffers(plainview, segment) {
+  return new Promise((resolve, reject) => {
+    var subjectPlayer
+    var codecs
+    checkCodecSupport(segment)
+    .then(codec => {
+      codecs = codec
+      return getPlayer(plainview)
+    })
+    .then(player => {
+      subjectPlayer = player
+      return getSkinner(plainview)
+    })
+    .then(skinner => {
+      return configureSkinUpdates(subjectPlayer)
+    })
+    .then(player => {
+      return createMediaSource(codecs, segment.payload, plainview)
+    })
+    .then(mediaSource => {
+      subjectPlayer.src = window.URL.createObjectURL(mediaSource)
+      resolve(true)
+    })
+    .catch(err => {
+      reject(err)
+    })
+  })
 }
 
 function primeForStreaming(plainview, cb) {
@@ -125,11 +208,13 @@ function fetchNextSegment(pv) {
 Plainview.prototype.configureMedia = function() {
   var pv = this
   return new Promise((resolve, reject) => {
-    fetchNextSegment(pv).then(function(atom){
-      createSourceBuffer(pv, atom, function(ms, err){
-        resolve(ms)
-      })
-    }).catch(function(err){
+    fetchNextSegment(pv)
+    .then(atom => {
+      return createSourceBuffer(pv, atom)
+    }).then(mediaSource => {
+      resolve(mediaSource)
+    })
+    .catch(err => {
       reject(err)
     })
   })
