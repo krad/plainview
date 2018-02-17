@@ -3,37 +3,51 @@
 *  @author krad.io <iam@krad.io>
 *  @version 0.0.3
  */
-var playlist        = require('./playlist')
-var atomPaser       = require('./atoms')
-var bofh            = require('./bofh')
-var playlistFetcher = require('./playlist_fetcher')
 var skinner         = require('./skin')
-var helpers         = require('./video_tag_helpers')
+var videoTagHelpers = require('./video_tag_helpers')
+var player          = require('./player')
 
 class Plainview {
+
+  /**
+   * constructor - Initializes a new plainview instance
+   *
+   * @param  {String} playerID ID of an HTML element in the DOM
+   * @return {Plainview} Initialized plainview instance
+   */
   constructor(playerID) {
-    this.player =
-    // getPlaylistURLFromMediaTag(this, playerID)
-    this.skinner = new skinner(playerID)
-    this._bofh = new bofh.BOFH()
-    this.segmentQueue = []
+    this.AVElement = videoTagHelpers.getPlayer(playerID)
+    if (this.AVElement) {
+      this.playlistURLs = videoTagHelpers.getHLSURLsFromPlayerID(playerID)
+      this._skinner     = new skinner(this.AVElement)
+
+      if (this.playlistURLs.length > 0) {
+        this._player = new player(this.playlistURLs[0])
+      } else {
+        throw 'No HLS playlists present in player tag'
+      }
+
+    } else {
+      throw 'Could not find player tag'
+    }
+  }
+
+  /**
+   * setup - Used to setup the player.
+   * Will skin the player and fetch the playlist & media info used to configure it.
+   *
+   * @param  {type} cb description
+   * @return {type}    description
+   */
+  setup(cb) {
+    this._skinner.skin()
+    this._player.configure().then(_ => {
+      cb()
+    }).catch(err => {
+      cb(err)
+    })
   }
 
 }
-
-
-// Plainview.prototype.play = function(cb) {
-//   var pv = this
-//   pv.setup().then(function(){
-//     return pv.configureMedia()
-//   }).then(function(ms){
-//     var parsedPlaylist = pv.fetcher.parsedPlaylist
-//     pv.skinner.addPlaylist(parsedPlaylist)
-//     startPlaying(pv)
-//     cb()
-//   }).catch(function(err){
-//     cb(err)
-//   })
-// }
 
 module.exports = Plainview
