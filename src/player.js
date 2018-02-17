@@ -13,6 +13,8 @@ class Player {
     return new Promise((resolve, reject) => {
       this._fetcher.fetchPlaylist()
       .then(playlist => {
+        this.duration = playlist.info.duration
+
         // Make a segment iterator from the playlist and fetch the first segment
         this._segmentIterator = this._fetcher.makeSegmentFetchIterator()
         if (this._segmentIterator) { return this._segmentIterator.next() }
@@ -43,8 +45,25 @@ class Player {
 
   createMediaSource(AVElement) {
     this.mediaSource = new MediaSource()
+
     this.mediaSource.addEventListener('sourceopen', e => {
-      const sourceBuffer = mediaSource.addSourceBuffer(this.codecs);
+      this.mediaSource.duration = this.duration
+
+      const sourceBuffer = this.mediaSource.addSourceBuffer(this.codecs);
+      sourceBuffer.addEventListener('updateend', x => {
+        console.log('sourceBuffer updatedend');
+        const fetchNextSegment = this._segmentIterator.next()
+        if (fetchNextSegment) {
+          fetchNextSegment
+          .then(data => {
+            sourceBuffer.appendBuffer(data.payload)
+          })
+          .catch(err => {
+            console.log('Err fetching segment');
+          })
+        }
+      })
+      sourceBuffer.appendBuffer(this._segmentQueue.shift().payload)
     })
 
     this.mediaSource.addEventListener('onsourceclose', e => {

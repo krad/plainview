@@ -36,15 +36,38 @@ class Plainview {
    * setup - Used to setup the player.
    * Will skin the player and fetch the playlist & media info used to configure it.
    *
-   * @param  {type} cb description
-   * @return {type}    description
+   * @param  {Function(err)} cb A function that is executed when setup is complete
    */
   setup(cb) {
     this._skinner.skin()
-    this._player.configure().then(_ => {
-      cb()
+    this._player.configure()
+    .then(_ => {
+      this._skinner.setTime(this.AVElement.currentTime, this._player.duration)
+
+      this.AVElement.addEventListener('play', x => {
+        console.log(x, 'played');
+        this._player.createMediaSource(this.AVElement)
+      })
+
+      this.AVElement.addEventListener('pause', x => {
+        console.log(x, 'paused');
+      })
+
+      this.AVElement.addEventListener('timeupdate', x => {
+        this._skinner.setTime(this.AVElement.currentTime, this._player.duration)
+      })
+
+      this.AVElement.addEventListener('seeked', x => {
+        console.log(x, 'seeked');
+      })
+
+      this.AVElement.addEventListener('stalled', x => {
+        console.log(x, 'stalled');
+      })
+
+      if(cb) { cb() }
     }).catch(err => {
-      cb(err)
+      if(cb) { cb(err) }
     })
   }
 

@@ -33,6 +33,10 @@ class Skinner {
 
     configurePlayerControls(this.playerControls, this.CONTROLS, this.player)
   }
+
+  setTime(currentTime, duration) {
+    this.timecode.innerHTML = timeCodeHelpers.makeDurationCounter(currentTime, duration)
+  }
 }
 
 const configurePlayerControls = (playerControls, CONTROLS, player) => {
