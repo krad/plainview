@@ -8,93 +8,111 @@
  var playlist   = require('./playlist')
  var atomParser = require('./atoms')
 
- const STATES = Object.freeze({
-   new: 0
- })
+class PlaylistFetcher {
 
-function PlaylistFetcher(url) {
-  this.url   = url
-  this._bofh = new bofh.BOFH()
-  this.state = STATES.new
+  constructor(url) {
+    this.url   = url
+    this._bofh = new bofh.BOFH()
+  }
+
+  /**
+   * fetchPlayslist - Returns a promise that returns a parsed playlist
+   *
+   * @return {Promise<Playlist>} Will attempt to fetch the playlist and parse it's contents
+   */
+  fetchPlaylist() {
+    return new Promise((resolve, reject) => {
+
+      this._bofh.get(this.url).then(data => {
+        return decodeData(data)
+      })
+      .then(playlistStr => {
+
+        var parsedPlaylist = playlist(playlistStr, buildSourceURL(this.url))
+        if (parsedPlaylist.info) {
+          this.playlist = parsedPlaylist
+          resolve(this.playlist)
+        } else {
+          reject('Could not parse playlist')
+        }
+
+      }).catch(err => {
+        console.log('failed');
+        reject(err)
+      })
+    })
+  }
+
+  fetchItem(item) {
+    if (typeof item == 'object') {
+      if (item.hasOwnProperty('url')) {
+        return this._bofh.get(item.url)
+      }
+    } else {
+      return this._bofh.get(item)
+    }
+    return null
+  }
+
+
+  /**
+   * makeSegmentFetchIterator - Returns an iterator that returns Promises for fetching each segment in a playlist
+   *
+   * @return {Iterator<Promise>} An iterator that returns sequential fetch promises for segments in a playlist
+   */
+  makeSegmentFetchIterator() {
+    if (this.playlist) {
+      const iterator = this.playlist.segmentIterator()
+      return {
+        next: () => {
+          const nextSegment = iterator.next()
+          if (nextSegment) {
+            return new Promise((resolve, reject) => {
+              this.fetchItem(nextSegment).then(data => {
+                if (nextSegment.isIndex) {
+                  const atom = parseAtom(data)
+                  resolve(atom)
+                } else {
+                  resolve({payload: data})
+                }
+              }).catch(err => {
+                reject(err)
+              })
+            })
+          }
+        }
+      }
+    }
+    return null
+  }
+
 }
 
-function decodePlaylist(fetcher, data) {
-  var decoder         = new TextDecoder();
-  var playlistStr     = decoder.decode(data)
+const decodeData = (data) => {
+  return new Promise((resolve, reject) => {
+    const decoder     = new TextDecoder()
+    const playlistStr = decoder.decode(data)
+    resolve(playlistStr)
+  })
+}
 
+const buildSourceURL = (itemURL) => {
   var srcURL
-  if (fetcher.url.endsWith('m3u8')) {
-    var urlComps    = fetcher.url.split('/')
+  if (itemURL.endsWith('m3u8')) {
+    var urlComps    = itemURL.split('/')
     var compsStrips = urlComps.slice(2, urlComps.length-1)
     var hostAndPath = compsStrips.join('/')
     srcURL          = urlComps[0] + '//' + hostAndPath
   }
-
-  var parsedPlaylist = playlist(playlistStr, srcURL)
-  if (parsedPlaylist.info) {
-    return parsedPlaylist
-  }
-
-  return null
+  return srcURL
 }
 
-function parseAtom(segmentData) {
+
+const parseAtom = (segmentData) => {
   var uint8buffer = new Uint8Array(segmentData)
   var atom        = atomParser(uint8buffer)
   atom.payload    = uint8buffer
   return atom
-}
-
-PlaylistFetcher.prototype.start = function(cb) {
-  var plf   = this
-  var fetch = this._bofh.get(this.url)
-
-  fetch.then(function(data){
-    plf.parsedPlaylist = decodePlaylist(plf, data)
-    cb(null)
-  }).catch(function(err) {
-    cb(err)
-  })
-}
-
-PlaylistFetcher.prototype.fetch = function(item) {
-  if (typeof item === 'object') {
-    if (item.hasOwnProperty('url')) {
-      return this._bofh.get(item.url)
-    }
-  } else {
-    return this._bofh.get(item)
-  }
-
-  return null
-}
-
-PlaylistFetcher.prototype.segmentFetchIterator = function() {
-  if (this.parsedPlaylist) {
-    var fetcher  = this
-    var iterator = fetcher.parsedPlaylist.segmentIterator()
-    return {
-      next: function() {
-        var nextSegment = iterator.next()
-        if (nextSegment) {
-          return new Promise((resolve, reject) => {
-            fetcher.fetch(nextSegment).then(function(segmentData){
-              if (nextSegment.isIndex) {
-                var parsedAtom = parseAtom(segmentData)
-                resolve(parsedAtom)
-              } else {
-                resolve({payload: segmentData})
-              }
-            }).catch(function(err){
-              reject(err)
-            })
-          })
-        }
-      }
-    }
-  }
-
-  return null
 }
 
 module.exports = PlaylistFetcher

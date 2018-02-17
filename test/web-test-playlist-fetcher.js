@@ -3,18 +3,19 @@ var fetcher = require('../src/playlist_fetcher')
 
 var client
 test('that we can fetch vod playlists', t=>{
-  t.plan(6)
+  t.plan(4)
 
   client = new fetcher('/vod.m3u8')
   t.ok(client, 'client created')
-  t.notOk(client.parsedPlaylist, 'no playlist present at startup')
-  t.equals(client.state, 0, 'fetcher was in correct state')
+  t.notOk(client.playlist, 'no playlist present at startup')
 
   t.timeoutAfter(1000)
-  client.start(function(err) {
+  client.fetchPlaylist()
+  .then(playlist => {
     t.ok(1, 'client started')
-    t.notOk(err, 'there was NOT an error')
-    t.ok(client.parsedPlaylist, 'parsed playlist present')
+    t.ok(client.playlist, 'parsed playlist present')
+  }).catch(err => {
+    t.fail("We failed to get the playlist", err)
   })
 
 })
@@ -23,7 +24,7 @@ test('that we can iterator fetches for playlist segments', t=> {
   t.plan(15)
   t.ok(client, 'client was present')
 
-  var iterator = client.segmentFetchIterator()
+  var iterator = client.makeSegmentFetchIterator()
   t.ok(iterator, 'fetch iterator was available')
 
   var promise1 = iterator.next()
@@ -32,6 +33,7 @@ test('that we can iterator fetches for playlist segments', t=> {
   var type = Object.prototype.toString.call(promise1)
   t.equals('[object Promise]', type, 'iterator returned a promise')
 
+  t.timeoutAfter(1000)
   promise1.then(function(atom) {
     t.ok(1, 'fetched the first segment')
     t.ok(atom, 'atom was present')

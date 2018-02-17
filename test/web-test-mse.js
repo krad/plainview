@@ -1,5 +1,7 @@
 var test = require('tape')
 
+var ms = require('../src/media_source')
+
 test('that we have access to browser structures', t=> {
   t.plan(6)
   t.ok(window, 'has a window object')
