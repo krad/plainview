@@ -33,13 +33,15 @@ Example
     <!-- Include the plainview bundle.  See building instructions. -->
     <script src="/example/plainview.js"></script>
 
-    <!-- When document is ready, pass the player to plainview and hit play -->
+    <!-- When document is ready, pass the player to plainview -->
     <script type="text/javascript">
       (function() {
 
         var plainview = new Plainview('player')
-        plainview.play(function(e){
-          console.log('Example started');
+
+        plainview.setup(function(err){
+          if(err) { console.log('Problem setting up player:', err) }
+          else    { console.log('Player Setup!') }
         })
 
       })()
