@@ -39,14 +39,13 @@ class Plainview {
    * @param  {Function(err)} cb A function that is executed when setup is complete
    */
   setup(cb) {
-    this._skinner.skin()
+    this._skinner.skin(this)
     this._player.configure()
     .then(_ => {
       this._skinner.setTime(this.AVElement.currentTime, this._player.duration)
 
       this.AVElement.addEventListener('play', x => {
         console.log(x, 'played');
-        this._player.createMediaSource(this.AVElement)
       })
 
       this.AVElement.addEventListener('pause', x => {
@@ -71,6 +70,38 @@ class Plainview {
     })
   }
 
+  play() {
+    this._player.createMediaSource(this.AVElement)
+    .then(_ => {
+      this.AVElement.play()
+    }).catch(err => {
+      console.log('problem playing');
+    })
+  }
+
+  pause() {
+    console.log('pause');
+  }
+
+  set muted(value) {
+       this.AVElement.muted = value
+  }
+
+  requestFullscreen() {
+    requestFullscreen(this.AVElement)
+  }
+
 }
+
+const requestFullscreen = (player) => {
+    if (player.requestFullscreen) {
+      player.requestFullscreen();
+    } else if (player.mozRequestFullScreen) {
+      player.mozRequestFullScreen(); // Firefox
+    } else if (player.webkitRequestFullscreen) {
+      player.webkitRequestFullscreen(); // Chrome and Safari
+    }
+}
+
 
 module.exports = Plainview

@@ -44,36 +44,31 @@ class Player {
   }
 
   createMediaSource(AVElement) {
-    this.mediaSource = new MediaSource()
+    return new Promise((resolve, reject) => {
+      this.mediaSource = new MediaSource()
+      this.mediaSource.addEventListener('sourceopen', e => {
+        this.mediaSource.duration = this.duration
 
-    this.mediaSource.addEventListener('sourceopen', e => {
-      this.mediaSource.duration = this.duration
-
-      const sourceBuffer = this.mediaSource.addSourceBuffer(this.codecs);
-      sourceBuffer.addEventListener('updateend', x => {
-        console.log('sourceBuffer updatedend');
-        const fetchNextSegment = this._segmentIterator.next()
-        if (fetchNextSegment) {
-          fetchNextSegment
-          .then(data => {
-            sourceBuffer.appendBuffer(data.payload)
-          })
-          .catch(err => {
-            console.log('Err fetching segment');
-          })
-        }
+        const sourceBuffer = this.mediaSource.addSourceBuffer(this.codecs);
+        sourceBuffer.addEventListener('updateend', x => {
+          const fetchNextSegment = this._segmentIterator.next()
+          if (fetchNextSegment) {
+            fetchNextSegment
+            .then(data => {
+              sourceBuffer.appendBuffer(data.payload)
+            })
+            .catch(err => {
+              console.log('Err fetching segment');
+            })
+          } else {
+            this.mediaSource.endOfStream();
+          }
+        })
+        sourceBuffer.appendBuffer(this._segmentQueue.shift().payload)
       })
-      sourceBuffer.appendBuffer(this._segmentQueue.shift().payload)
+      AVElement.src = window.URL.createObjectURL(this.mediaSource);
+      resolve()
     })
-
-    this.mediaSource.addEventListener('onsourceclose', e => {
-      console.log('onsourceclode');
-    })
-
-    this.mediaSource.addEventListener('onsourceended', e => {
-      console.log('onsourceended');
-    })
-    AVElement.src = window.URL.createObjectURL(this.mediaSource);
   }
 
 }

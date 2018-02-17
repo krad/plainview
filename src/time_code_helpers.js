@@ -1,10 +1,10 @@
-function pad(number, size) {
+const pad = (number, size) => {
   var s = String(parseInt(number))
   while (s.length < (size || 2)) {s = "0" + s;}
   return s;
 }
 
-function convertSeconds(seconds) {
+const convertSeconds = (seconds) => {
   var d, h, m, s;
   s = seconds
   m = Math.floor(s / 60);
@@ -16,7 +16,7 @@ function convertSeconds(seconds) {
   return { d: d, h: h, m: m, s: s };
 }
 
-function makeTimeCode(seconds) {
+const makeTimeCode = (seconds) => {
   var c = convertSeconds(seconds)
   var timeComponents
   if (c.h <= 0) { timeComponents = [c.m, c.s] }
@@ -25,15 +25,22 @@ function makeTimeCode(seconds) {
   return timeComponents.map(function(t){ return pad(t, 2) }).join(':')
 }
 
-function makeDurationCounter(current, overall) {
+const makeDurationCounter = (current, overall) => {
   var timeComponents = [makeTimeCode(current), makeTimeCode(overall)]
   var displayTime    = timeComponents.join(' / ')
   return displayTime
 }
 
+const percentageComplete = (currentTime, duration) => {
+    const percentage = Math.floor((100 / duration) * currentTime)
+    return percentage
+}
+
+
 module.exports = {
   pad: pad,
   convertSeconds: convertSeconds,
   makeTimeCode: makeTimeCode,
-  makeDurationCounter: makeDurationCounter
+  makeDurationCounter: makeDurationCounter,
+  percentageComplete: percentageComplete
 }

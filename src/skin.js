@@ -14,12 +14,12 @@ class Skinner {
                  ['unmute', {template: "Unmute", onToggle: (x) => { x.muted = true }}]]
       },
       'fs': {
-        onToggle: (x) => { requestFullscreen(x) },
+        onToggle: (x) => { x.requestFullscreen() },
       },
     }
   }
 
-  skin() {
+  skin(delegate) {
     removePlayerControls(this.player)
     const wrappers = wrapVideoWithPlayerControls(this.player)
     stylePlayer(this.player)
@@ -31,11 +31,12 @@ class Skinner {
     this.timecode    = styleButtons(this.playerControls)
     styleRightControls(this.playerControls)
 
-    configurePlayerControls(this.playerControls, this.CONTROLS, this.player)
+    configurePlayerControls(this.playerControls, this.CONTROLS, delegate)
   }
 
   setTime(currentTime, duration) {
     this.timecode.innerHTML = timeCodeHelpers.makeDurationCounter(currentTime, duration)
+    this.progressBar.value  = timeCodeHelpers.percentageComplete(currentTime, duration)
   }
 }
 
@@ -68,28 +69,6 @@ const configurePlayerControls = (playerControls, CONTROLS, player) => {
         toggle(player)
       })
     }
-  }
-}
-
-const requestFullscreen = (player) => {
-    if (player.requestFullscreen) {
-      player.requestFullscreen();
-    } else if (player.mozRequestFullScreen) {
-      player.mozRequestFullScreen(); // Firefox
-    } else if (player.webkitRequestFullscreen) {
-      player.webkitRequestFullscreen(); // Chrome and Safari
-    }
-}
-
-function updateProgressBar(skinner, player, event) {
-  if (skinner.parsedPlaylist) {
-    var duration = skinner.parsedPlaylist.info.duration
-    updateDisplayTime(skinner.timecode,
-                      player.currentTime,
-                      duration)
-
-    var percentage = Math.floor((100 / duration) * player.currentTime)
-    skinner.progressBar.value = percentage
   }
 }
 
@@ -147,7 +126,7 @@ const styleProgressBar = (videoWrapper) => {
   progressBar.style.cssText     += 'margin: 0 !important; padding: 0 !important;'
   progressBar.style.cssText     += 'background-color: #EAF6FD !important;'
 
-  return progressWrapper
+  return progressBar
 }
 
 const styleButtons = (playerControls) => {
