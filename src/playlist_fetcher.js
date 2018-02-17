@@ -8,9 +8,11 @@
  var playlist   = require('./playlist')
  var atomParser = require('./atoms')
 
-const PlaylistFetcher = (url) => {
-  this.url   = url
-  this._bofh = new bofh.BOFH()
+class PlaylistFetcher {
+  constructor(url) {
+    this.url   = url
+    this._bofh = new bofh.BOFH()
+  }
 }
 
 const decodePlaylist = (fetcher, data) => {

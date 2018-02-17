@@ -8,5 +8,5 @@
  var atomParser = require('./atoms')
 
 function MediaSourceMiddle() {
-  
+
 }

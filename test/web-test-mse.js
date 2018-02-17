@@ -34,7 +34,3 @@ test('that we can open a new MediaSource', t=> {
   vidTag.src = URL.createObjectURL(ms)
 
 })
-
-test('that we can do stuff with out middleman', t => {
-  
-})
