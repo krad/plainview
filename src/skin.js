@@ -139,6 +139,7 @@ const styleProgressBar = (videoWrapper) => {
   progressBar.style.cssText     += 'color: #209cee !important;'
   progressBar.style.cssText     += 'margin: 0 !important; padding: 0 !important;'
   progressBar.style.cssText     += 'background-color: #EAF6FD !important;'
+  progressBar.style.cssText     += 'position: absolute;'
 
   return progressBar
 }
