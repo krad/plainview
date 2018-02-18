@@ -21,6 +21,7 @@ class Skinner {
 
   skin(delegate) {
     removePlayerControls(this.player)
+    preventiOSAutoFullscreen(this.player)
     const wrappers = wrapVideoWithPlayerControls(this.player)
     stylePlayer(this.player)
 
@@ -88,7 +89,11 @@ const configurePlayerControls = (playerControls, CONTROLS, player) => {
 
 // Remove native controls
 const removePlayerControls = (player) => {
-  player.controls = false
+  player.removeAttribute('controls')
+}
+
+const preventiOSAutoFullscreen = (player) => {
+  player.setAttribute('playsinline', '')
 }
 
 const wrapVideoWithPlayerControls = (player) => {
