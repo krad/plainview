@@ -44,20 +44,24 @@ class Player {
   }
 
   play(AVElement) {
-    if (this.mediaSource) {
+    if (this._support.hasNativeHLSSupportFor(AVElement)) {
       AVElement.play()
-      .then(_ => { })
-      .catch(err => {
-        console.log('MediaSourcePresent play error', err);
-      })
     } else {
-      this.createMediaSource(AVElement)
-      .then(_ => {
-        return AVElement.play()
-      }).then(_ => { })
-      .catch(err => {
-        console.log('problem playing', err);
-      })
+      if (this.mediaSource) {
+        AVElement.play()
+        .then(_ => {
+        }).catch(err => {
+          console.log('MediaSourcePresent play error', err);
+        })
+      } else {
+        this.createMediaSource(AVElement)
+        .then(_ => {
+          return AVElement.play()
+        }).then(_ => { })
+        .catch(err => {
+          console.log('problem playing');
+        })
+      }
     }
   }
 
@@ -67,7 +71,7 @@ class Player {
 
   createMediaSource(AVElement) {
     return new Promise((resolve, reject) => {
-      this.mediaSource = new MediaSource()
+      this.mediaSource = new window.MediaSource()
       this.mediaSource.addEventListener('sourceopen', e => {
         this.mediaSource.duration = this.duration
 

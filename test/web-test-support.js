@@ -32,77 +32,76 @@ test('that we can get a list of a/v codecs a browser could support', t=>{
   console.log(s.codecs);
 })
 
-// test('that we can check if a browser has native HLS support', t=> {
-//   t.plan(6)
-//
-//   t.ok(pv, 'was able to create a plainview object')
-//   t.ok(pv.player, 'found the player tag')
-//   t.ok(pv.playlistURL, 'found the playlistURL')
-//
-//   var s = new support()
-//   t.ok(s, 'support object created')
-//
-//   var check = s.hasNativeHLSSupportFor(pv.player)
-//   t.equals(false, check, 'Chrome does NOT have native HLS support')
-//
-//   var fakePlayer = {}
-//   fakePlayer.canPlayType = function(type) {
-//     if (type == 'application/vnd.apple.mpegurl' || type == 'vnd.apple.mpegURL') {
-//       return true
-//     }
-//     return false
-//   }
-//
-//   check = s.hasNativeHLSSupportFor(fakePlayer)
-//   t.ok(check, 'it supports our fake player')
-//
-// })
-//
-// test('that we can check if a browser supports different a/v combos', t=> {
-//   var s           = new support
-//   var codecs      = s.codecs
-//   var videoCodecs = s.videoCodecs
-//   var audioCodecs = s.audioCodecs
-//
-//   t.plan(2 + codecs.length + videoCodecs.length + audioCodecs.length)
-//
-//   t.ok(pv, 'plainview object present')
-//   t.ok(pv.player, 'found the player tag')
-//
-//   for (var i = 0; i < codecs.length; i++) {
-//     var codec = codecs[i]
-//     var check = s.canSupport(codec)
-//     t.ok(check, 'can support ' + codec)
-//   }
-//
-//   for (var i = 0; i < videoCodecs.length; i++) {
-//     var codec = videoCodecs[i]
-//     var check = s.canSupport(codec)
-//     t.ok(check, 'can support ' + codec)
-//   }
-//
-//   for (var i = 0; i < audioCodecs.length; i++) {
-//     var codec = audioCodecs[i]
-//     var check = s.canSupport(codec)
-//     t.ok(check, 'can support ' + codec)
-//   }
-//
-// })
-//
-// test('that we can build a support matrix object', t=> {
-//   t.plan(5)
-//   var s = new support
-//   var supportMatrix = s.supportMatrix
-//   t.ok(supportMatrix, 'supportMatrix present')
-//
-//   // t.ok(supportMatrix.hasOwnProperty('audio/video'), 'has audio/video property')
-//   t.ok(supportMatrix.hasOwnProperty('audio'), 'has audio property')
-//   t.ok(supportMatrix.hasOwnProperty('video'), 'has video property')
-//
-//   // t.ok(supportMatrix['audio/video'], 'audio/video was present')
-//   t.ok(supportMatrix['audio'], 'audio was present')
-//   t.ok(supportMatrix['video'], 'video was present')
-//
-//   console.log(supportMatrix);
-//
-// })
+test('that we can check if a browser has native HLS support', t=> {
+  t.plan(5)
+
+  t.ok(pv, 'was able to create a plainview object')
+  t.ok(pv.AVElement, 'found the player tag')
+
+  var s = new support()
+  t.ok(s, 'support object created')
+
+  var check = s.hasNativeHLSSupportFor(pv.AVElement)
+  t.equals(false, check, 'Chrome does NOT have native HLS support')
+
+  var fakePlayer = {}
+  fakePlayer.canPlayType = function(type) {
+    if (type == 'application/vnd.apple.mpegurl' || type == 'vnd.apple.mpegURL') {
+      return true
+    }
+    return false
+  }
+
+  check = s.hasNativeHLSSupportFor(fakePlayer)
+  t.ok(check, 'it supports our fake player')
+
+})
+
+test('that we can check if a browser supports different a/v combos', t=> {
+  var s           = new support
+  var codecs      = s.codecs
+  var videoCodecs = s.videoCodecs
+  var audioCodecs = s.audioCodecs
+
+  t.plan(2 + codecs.length + videoCodecs.length + audioCodecs.length)
+
+  t.ok(pv, 'plainview object present')
+  t.ok(pv.AVElement, 'found the player tag')
+
+  for (var i = 0; i < codecs.length; i++) {
+    var codec = codecs[i]
+    var check = s.canSupport(codec)
+    t.ok(check, 'can support ' + codec)
+  }
+
+  for (var i = 0; i < videoCodecs.length; i++) {
+    var codec = videoCodecs[i]
+    var check = s.canSupport(codec)
+    t.ok(check, 'can support ' + codec)
+  }
+
+  for (var i = 0; i < audioCodecs.length; i++) {
+    var codec = audioCodecs[i]
+    var check = s.canSupport(codec)
+    t.ok(check, 'can support ' + codec)
+  }
+
+})
+
+test('that we can build a support matrix object', t=> {
+  t.plan(5)
+  var s = new support
+  var supportMatrix = s.supportMatrix
+  t.ok(supportMatrix, 'supportMatrix present')
+
+  // t.ok(supportMatrix.hasOwnProperty('audio/video'), 'has audio/video property')
+  t.ok(supportMatrix.hasOwnProperty('audio'), 'has audio property')
+  t.ok(supportMatrix.hasOwnProperty('video'), 'has video property')
+
+  // t.ok(supportMatrix['audio/video'], 'audio/video was present')
+  t.ok(supportMatrix['audio'], 'audio was present')
+  t.ok(supportMatrix['video'], 'video was present')
+
+  console.log(supportMatrix);
+
+})

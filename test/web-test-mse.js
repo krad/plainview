@@ -1,7 +1,5 @@
 var test = require('tape')
 
-var ms = require('../src/media_source')
-
 test('that we have access to browser structures', t=> {
   t.plan(6)
   t.ok(window, 'has a window object')
@@ -16,11 +14,11 @@ test('that we can open a new MediaSource', t=> {
   t.plan(5)
 
   var mimeCodec = 'video/mp4; codecs="avc1.42E01E,mp4a.40.2"';
-  t.ok(MediaSource.isTypeSupported(mimeCodec), 'codec is supported')
+  t.ok(window.MediaSource.isTypeSupported(mimeCodec), 'codec is supported')
 
   var vidTag = document.createElement("video");
 
-  var ms = new MediaSource()
+  var ms = new window.MediaSource()
   t.ok(ms, 'MediaSource present')
 
   var onSourceOpen = function(videoTag, e) {
