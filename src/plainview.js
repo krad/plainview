@@ -40,7 +40,7 @@ class Plainview {
    */
   setup(cb) {
     this._skinner.skin(this)
-    this._player.configure()
+    this._player.configure(this.AVElement)
     .then(_ => {
       this._skinner.setTime(this.AVElement.currentTime, this._player.duration)
 

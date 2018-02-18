@@ -9,7 +9,7 @@ class Player {
     this._segmentQueue = []
   }
 
-  configure() {
+  configure(AVElement) {
     return new Promise((resolve, reject) => {
       this._fetcher.fetchPlaylist()
       .then(playlist => {
@@ -23,12 +23,20 @@ class Player {
       }).then(firstAtom => {
         // Get the codec information from the first segment
         if (firstAtom.codecsString) {
+
+          if (this._support.hasNativeHLSSupportFor(AVElement)) {
+            this.codecs = firstAtom.codecsString
+            this._segmentQueue.push(firstAtom)
+            resolve(true)
+            return
+          }
+
           // Check if we support this codec
           if (this._support.canSupport(firstAtom.codecsString)) {
             // Save state.  This is as far as we go when configuring
             this.codecs = firstAtom.codecsString
             this._segmentQueue.push(firstAtom)
-            resolve(this.codecs)
+            resolve(true)
           } else {
             reject('Codec not supported.')
           }
@@ -44,20 +52,24 @@ class Player {
   }
 
   play(AVElement) {
-    if (this.mediaSource) {
+    if (this._support.hasNativeHLSSupportFor(AVElement)) {
       AVElement.play()
-      .then(_ => { })
-      .catch(err => {
-        console.log('MediaSourcePresent play error', err);
-      })
     } else {
-      this.createMediaSource(AVElement)
-      .then(_ => {
-        return AVElement.play()
-      }).then(_ => { })
-      .catch(err => {
-        console.log('problem playing', err);
-      })
+      if (this.mediaSource) {
+        AVElement.play()
+        .then(_ => {
+        }).catch(err => {
+          console.log('MediaSourcePresent play error', err);
+        })
+      } else {
+        this.createMediaSource(AVElement)
+        .then(_ => {
+          return AVElement.play()
+        }).then(_ => { })
+        .catch(err => {
+          console.log('problem playing');
+        })
+      }
     }
   }
 
@@ -67,7 +79,7 @@ class Player {
 
   createMediaSource(AVElement) {
     return new Promise((resolve, reject) => {
-      this.mediaSource = new MediaSource()
+      this.mediaSource = new window.MediaSource()
       this.mediaSource.addEventListener('sourceopen', e => {
         this.mediaSource.duration = this.duration
 

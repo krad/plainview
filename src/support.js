@@ -58,6 +58,8 @@ function buildCodecTypeString(mimeType, codec) {
  * @return {Object}              Object with all the codec details and whether its supported
  */
 function checkSupportFor(codecsObject) {
+  if (!window.MediaSource) { return false }
+
   var result
   var codecList = Object.keys(codecsObject)
   for (var i = 0; i < codecList.length; i++) {
@@ -65,7 +67,7 @@ function checkSupportFor(codecsObject) {
     var details          = codecsObject[codec]
     var type             = buildCodecTypeString(details.mimeType, codec)
     details['type']      = type
-    var supported        = MediaSource.isTypeSupported(type)
+    var supported        = window.MediaSource.isTypeSupported(type)
     details['supported'] = supported
 
     if (!result) { result = [] }
@@ -113,6 +115,11 @@ AVSupport.prototype.hasNativeHLSSupportFor = function(player) {
     return true
   }
 
+  supportsNativeHLS = player.canPlayType('application/x-mpegURL')
+  if (supportsNativeHLS) {
+    return true
+  }
+
   return false
 }
 
@@ -124,12 +131,15 @@ AVSupport.prototype.hasNativeHLSSupportFor = function(player) {
  */
 AVSupport.prototype.canSupport = function(codec) {
   var mimeType = mimeTypeFor(codec)
+  if (window.MediaSource) {
+    var checkStr
+    if (mimeType) { checkStr = buildCodecTypeString(mimeType, codec) }
+    else { checkStr = codec }
 
-  var checkStr
-  if (mimeType) { checkStr = buildCodecTypeString(mimeType, codec) }
-  else { checkStr = codec }
-
-  return MediaSource.isTypeSupported(checkStr)
+    return window.MediaSource.isTypeSupported(checkStr)
+  } else {
+    return false
+  }
 }
 
 module.exports = AVSupport

@@ -15,7 +15,7 @@ var html = `
 
 test('that we we can configure a player', t => {
   document.body.innerHTML = html
-  t.plan(9)
+  t.plan(10)
   const p = new player('/vod.m3u8')
   t.ok(p,                             'created a player')
   t.notOk(p._segmentIterator,         'segmentIterator was not present')
@@ -24,7 +24,10 @@ test('that we we can configure a player', t => {
 
   t.timeoutAfter(1000)
 
-  p.configure()
+  var videoTag = document.getElementById('player')
+  t.ok(videoTag, 'videoTag was present')
+
+  p.configure(videoTag)
   .then(result => {
     t.ok(p._segmentIterator, 'segmentIterator was present')
     t.ok(p.codecs, 'player had codec information')
