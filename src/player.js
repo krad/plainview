@@ -9,7 +9,7 @@ class Player {
     this._segmentQueue = []
   }
 
-  configure() {
+  configure(AVElement) {
     return new Promise((resolve, reject) => {
       this._fetcher.fetchPlaylist()
       .then(playlist => {
@@ -23,12 +23,20 @@ class Player {
       }).then(firstAtom => {
         // Get the codec information from the first segment
         if (firstAtom.codecsString) {
+
+          if (this._support.hasNativeHLSSupportFor(AVElement)) {
+            this.codecs = firstAtom.codecsString
+            this._segmentQueue.push(firstAtom)
+            resolve(true)
+            return
+          }
+
           // Check if we support this codec
           if (this._support.canSupport(firstAtom.codecsString)) {
             // Save state.  This is as far as we go when configuring
             this.codecs = firstAtom.codecsString
             this._segmentQueue.push(firstAtom)
-            resolve(this.codecs)
+            resolve(true)
           } else {
             reject('Codec not supported.')
           }

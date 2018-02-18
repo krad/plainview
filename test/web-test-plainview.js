@@ -19,6 +19,8 @@ test('that we can setup the document contents', t=> {
 
 var pv
 test('that we can setup a plainview object', t=> {
+  document.body.innerHTML = html
+
   t.plan(6)
 
   pv = new plainview('playerx')
