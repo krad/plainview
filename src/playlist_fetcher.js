@@ -27,7 +27,6 @@ class PlaylistFetcher {
         return decodeData(data)
       })
       .then(playlistStr => {
-
         var parsedPlaylist = playlist(playlistStr, buildSourceURL(this.url))
         if (parsedPlaylist.info) {
           this.playlist = parsedPlaylist
@@ -35,9 +34,8 @@ class PlaylistFetcher {
         } else {
           reject('Could not parse playlist')
         }
-
-      }).catch(err => {
-        console.log('failed');
+      })
+      .catch(err => {
         reject(err)
       })
     })
@@ -53,7 +51,6 @@ class PlaylistFetcher {
     }
     return null
   }
-
 
   /**
    * makeSegmentFetchIterator - Returns an iterator that returns Promises for fetching each segment in a playlist
