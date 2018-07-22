@@ -1,6 +1,6 @@
 {
   "name": "@krad/plainview",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "An m3u8 (HLS playlist) and mp4 parser",
   "main": "src/index.js",
   "scripts": {
