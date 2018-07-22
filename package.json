@@ -8,7 +8,8 @@
     "autotest": "tape-watch test/**/*-test.js | tap-spec",
     "nodetest": "tape test/**/*-test.js | tap-spec",
     "webtest": "browserify test/web-test-*.js | tape-run --static='./test/fixtures' | tap-spec",
-    "build": "browserify src/index.js --standalone Plainview -t [babelify --presets es2015] | uglifyjs > build/plainview.js"
+    "build": "browserify src/index.js --standalone Plainview -t [babelify --presets es2015] | uglifyjs > build/plainview.js",
+    "builddocs": "jsdoc src/* -d docs"
   },
   "author": "iam@krad.io",
   "license": "MIT",
