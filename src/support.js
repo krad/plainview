@@ -142,4 +142,4 @@ AVSupport.prototype.canSupport = function(codec) {
   }
 }
 
-module.exports = AVSupport
+export default AVSupport

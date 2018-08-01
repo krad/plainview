@@ -1,5 +1,5 @@
-var test  = require('tape')
-var h     = require('../src/time_code_helpers')
+const test  = require('tape')
+import * as h from '../src/time_code_helpers'
 
 test('that that we can pad numbers', t => {
   t.plan(2)

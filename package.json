@@ -1,27 +1,39 @@
 {
   "name": "@krad/plainview",
   "version": "1.2.2",
-  "description": "An m3u8 (HLS playlist) and mp4 parser",
+  "description": "HTML5 video player",
   "main": "src/index.js",
   "scripts": {
-    "test": "set -e; npm run nodetest; npm run webtest",
-    "autotest": "tape-watch test/**/*-test.js | tap-spec",
-    "nodetest": "tape test/**/*-test.js | tap-spec",
-    "webtest": "browserify test/web-test-*.js | tape-run --static='./test/fixtures' | tap-spec",
-    "build": "browserify src/index.js --standalone Plainview -t [babelify --presets es2015] | uglifyjs > build/plainview.js",
-    "builddocs": "jsdoc src/* -d docs"
+    "test": "babel-tape-runner test/**/*.js | tap-spec",
+    "autotest": "tape-watch -c -r babel-register test/**/*-test.js | tap-spec",
+    "docs": "jsdoc src/* -d docs",
+    "cov": "NODE_ENV=test ./node_modules/nyc/bin/nyc.js npm test",
+    "covhtml": "NODE_ENV=test ./node_modules/nyc/bin/nyc.js report --reporter=html --reporter=lcov",
+    "lint": "eslint src/*",
+    "build": "babel src --presets babel-preset-es2015 --out-dir distribution"
   },
   "author": "iam@krad.io",
   "license": "MIT",
   "devDependencies": {
-    "babel-core": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-plugin-istanbul": "^4.1.6",
     "babel-preset-es2015": "^6.24.1",
+    "babel-tape-runner": "^2.0.1",
     "babelify": "^8.0.0",
-    "browserify": "^15.2.0",
-    "tap-spec": "^4.1.1",
-    "tape": "^4.8.0",
-    "tape-run": "^3.0.2",
-    "tape-watch": "^2.3.0",
-    "uglify-js": "^3.3.9"
+    "coveralls": "^3.0.2",
+    "eslint": "^5.1.0",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.13.0",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-promise": "^3.8.0",
+    "eslint-plugin-standard": "^3.1.0",
+    "nyc": "^12.0.2",
+    "tap-spec": "^5.0.0",
+    "tape": "^4.9.1",
+    "tape-run": "^4.0.0",
+    "tape-watch": "^2.3.0"
+  },
+  "dependencies": {
+    "@krad/slugline": "^1.0.0"
   }
 }
