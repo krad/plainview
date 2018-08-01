@@ -30,7 +30,7 @@ const playerConfigureTest = (t) => {
     t.notOk(player.downloadProgress, 'no download progress yet')
     player.fetchSegments()
 
-    setTimeout(() => { t.equals(100, player.downloadProgress, 'downloaded all segments') }, 2000)
+    setTimeout(() => { t.equals(100.00, player.downloadProgress, 'downloaded all segments') }, 2000)
 
   }).catch(err => {
     t.fail('Failed to fetch playlist:' + err)

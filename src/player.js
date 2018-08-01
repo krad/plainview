@@ -41,7 +41,7 @@ class Player {
       total += segmentProgress
     })
 
-    this._downloadProgress = parseInt(total)
+    this._downloadProgress = total.toFixed(2)
   }
 
   get totalDuration() {
