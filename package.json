@@ -27,13 +27,13 @@
     "eslint-plugin-node": "^7.0.1",
     "eslint-plugin-promise": "^3.8.0",
     "eslint-plugin-standard": "^3.1.0",
+    "express": "^4.16.3",
+    "jsdom": "^11.12.0",
     "nyc": "^12.0.2",
     "tap-spec": "^5.0.0",
     "tape": "^4.9.1",
     "tape-run": "^4.0.0",
     "tape-watch": "^2.3.0"
   },
-  "dependencies": {
-    "@krad/slugline": "^1.0.0"
-  }
+  "dependencies": {}
 }
