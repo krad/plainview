@@ -54,7 +54,6 @@ class Player {
     if (this.onDownloadProgress) {
       this.onDownloadProgress(this._downloadProgress)
     }
-
   }
 
   get totalDuration() {

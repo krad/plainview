@@ -11,67 +11,49 @@ import { percentageComplete, makeTimeCode } from './time-code-helpers'
 
 class plainview {
 
-  constructor(config) {
-    this.player                    = new Player(config.url)
-    this.player.onDownloadProgress = config.onDownloadProgress
-    this.onPlay                    = config.onPlay
-    this.onPause                   = config.onPause
-    this.onMute                    = config.onMute
-    this.onUnmute                  = config.onUnmute
-    this.onPlayProgress            = config.onPlayProgress
+  constructor(url) {
+    this.player                    = new Player(url)
+    // this.video.onloadstart = (x) => { }
+    // this.video.ondurationchange = (x) => { }
+    // this.video.onloadedmetadata = (x) => { }
+    // this.video.onloadeddata = (x) => { }
+    // this.video.onprogress = (x) => { }
+    // this.video.oncanplay = (x) => { }
+    // this.video.oncanplaythrough = (x) => { }
+    // this.video.addEventListener('seeked', (x) => { })
+    this.onSourceOpen = this.onSourceOpen.bind(this)
+  }
 
-    this.video                     = config.video
+  set video(val) {
+    this._video = val
     this.video.setAttribute('playsinline', '')
 
-    // this.video.onloadstart = (x) => {
-    //   console.log('on load start', x)
-    // }
-    //
-    // this.video.ondurationchange = (x) => {
-    //   console.log('on duration change', x)
-    // }
-    //
-    // this.video.onloadedmetadata = (x) => {
-    //   console.log('onloadedmetadata', x)
-    // }
-    //
-    // this.video.onloadeddata = (x) => {
-    //   console.log('onloadeddata', x)
-    // }
-    //
-    // this.video.onprogress = (x) => {
-    //   console.log('on progress', x);
-    // }
-    //
-    // this.video.oncanplay = (x) => {
-    //   console.log('on can play', x);
-    // }
-    //
-    // this.video.oncanplaythrough = (x) => {
-    //   console.log('on can play through', x);
-    // }
-    //
-    // this.video.addEventListener('seeked', (x) => {
-    //   console.log('seeeedd');
-    // })
-    //
     this.video.addEventListener('timeupdate', (e) => {
       const progress = percentageComplete(this.video.currentTime, this.player.totalDuration)
-      const timecode = makeTimeCode(this.video.currentTime, this.player.totalDuration)
-      this.onPlayProgress(progress, timecode)
+      const timecode = makeTimeCode(this.video.currentTime)
+      const total    = makeTimeCode(this.player.totalDuration)
+      this.onPlayProgress(progress, timecode, total)
     })
 
     this.video.addEventListener('ended', (e) => {
-      console.log('ended');
+      this.onEnded()
     })
 
-    this.onSourceOpen              = this.onSourceOpen.bind(this)
+    this.video.addEventListener('canplay', (_) => {
+      this.onCanPlay()
+    })
+
 
     this.player.configure().then(player => {
       if (AVSupport.hasNativeHLSSupportFor(this.video)) {
         this.video.src = player.playlist.url
       } else {
         const mimeCodec = player.playlist.codecsString
+
+        const timecode  = makeTimeCode(this.video.currentTime)
+        const total     = makeTimeCode(this.player.totalDuration)
+        this.onPlayProgress(0, timecode, total)
+
         if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
           player.fetchSegments()
           this.mediaSource  = new window.MediaSource()
@@ -82,32 +64,41 @@ class plainview {
     })
   }
 
+  set onDownloadProgress(cb) {
+    if (this.player) { this.player.onDownloadProgress = cb }
+  }
+
+  get video() {
+    return this._video
+  }
+
   play() {
-    this.video.play()
+    this._video.play()
     this.onPlay()
   }
 
   replay() {
-    console.log('replay hit');
+    this.video.currentTime = 0
+    this.onReplay()
   }
 
   pause() {
-    this.video.pause()
+    this._video.pause()
     this.onPause()
   }
 
   mute() {
-    this.video.muted = true
+    this._video.muted = true
     this.onMute()
   }
 
   unmute() {
-    this.video.muted = false
+    this._video.muted = false
     this.onUnmute()
   }
 
   async onSourceOpen(e) {
-    URL.revokeObjectURL(this.video.src);
+    URL.revokeObjectURL(this._video.src);
     const mediaSource  = e.target
     const sourceBuffer = mediaSource.addSourceBuffer(this.player.playlist.codecsString)
 
@@ -121,6 +112,8 @@ class plainview {
         }
       })
     }
+    mediaSource.endOfStream()
+
   }
 
 }
@@ -137,5 +130,5 @@ const requestFullscreen = (player) => {
 }
 
 global.plainview  = plainview
-global.Player     = Player
 export default plainview
+export { makeTimeCode }

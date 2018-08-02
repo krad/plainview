@@ -29,23 +29,30 @@
       var muteElem          = document.getElementById('mute')
       var timecodeElem      = document.getElementById('time-code')
 
-      var config = {
-        url: 'http://0.0.0.0:8000/basic/krad.tv/tractor/vod.m3u8',
-        video: document.getElementById('video'),
-        onPlayProgress: (percentDone, timecode) => {
-          playProgressElem.value = percentDone
-          timecodeElem.innerHTML = timecode
-        },
-        onDownloadProgress: (percentDone) => { progressElem.value = percentDone },
-        onPlay:   () => { playElem.innerHTML = 'Pause'; playElem.setAttribute('onclick', 'window.pv.pause()') },
-        onPause:  () => { playElem.innerHTML = 'Play'; playElem.setAttribute('onclick', 'window.pv.play()') },
-        onEnded:  () => { playElem.innerHTML = 'Replay'; playElem.setAttribute('onclick', 'window.pv.replay()') },
-        onMute:   () => { muteElem.innerHTML = 'Unmute'; muteElem.setAttribute('onclick', 'window.pv.unmute()') },
-        onUnmute: () => { muteElem.innerHTML = 'Mute'; muteElem.setAttribute('onclick', 'window.pv.mute()') },
+      const onPlayProgress = (percentDone, timecode) => {
+        playProgressElem.value = percentDone
+        timecodeElem.innerHTML = timecode
       }
 
-      window.pv = new plainview(config)
+      const onDownloadProgress = (percentDone) => { progressElem.value = percentDone }
+      const onPlay   = () => { playElem.innerHTML = 'Pause'; playElem.setAttribute('onclick', 'window.pv.pause()') }
+      const onPause  = () => { playElem.innerHTML = 'Play'; playElem.setAttribute('onclick', 'window.pv.play()') }
+      const onEnded  = () => { playElem.innerHTML = 'Replay'; playElem.setAttribute('onclick', 'window.pv.replay()') }
+      const onMute   = () => { muteElem.innerHTML = 'Unmute'; muteElem.setAttribute('onclick', 'window.pv.unmute()') }
+      const onUnmute = () => { muteElem.innerHTML = 'Mute'; muteElem.setAttribute('onclick', 'window.pv.mute()') }
 
+
+      let pv                = new plainview('http://0.0.0.0:8000/basic/krad.tv/tractor/vod.m3u8')
+      pv.onPlayProgress     = onPlayProgress
+      pv.onDownloadProgress = onDownloadProgress
+      pv.onPlay             = onPlay
+      pv.onPause            = onPause
+      pv.onEnded            = onEnded
+      pv.onMute             = onMute
+      pv.onUnmute           = onUnmute
+
+      pv.video  = document.getElementById('video')
+      window.pv = pv
     })()
     </script>
   </body>
