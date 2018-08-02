@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>plainview</title>
+    <style media="screen">
+      * { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+    </style>
+  </head>
+  <body>
+
+    <div>
+      <h1>plainview</h1>
+      <video id='video'></video><br />
+      <progress id='progress' value="0" max="100">0%</progress><br />
+      <button>Play</button>
+      <button>Pause</button>
+      <button>Mute</button>
+      <button>Unmute</button>
+      <button>Full Screen</button>
+    </div>
+
+    <script src="http://localhost:1234/plainview.js" charset="utf-8"></script>
+    <script type="text/javascript">
+    (function() {
+
+      var progressElem = document.getElementById('progress')
+
+      var config = {
+        url: 'http://0.0.0.0:8000/basic/krad.tv/tractor/vod.m3u8',
+        video: document.getElementById('video'),
+        onDownloadProgress: (percentDone) => { progressElem.value = percentDone }
+      }
+
+      var pv = new plainview(config)
+
+    })()
+    </script>
+  </body>
+</html>

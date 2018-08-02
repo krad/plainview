@@ -83,5 +83,6 @@ krad.tv/
 *.mp2
 *.mp3
 distribution
+dist
 # End of https://www.gitignore.io/api/node
 

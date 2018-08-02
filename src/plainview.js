@@ -1,56 +1,82 @@
 /**
-*  @file plainview - a suite of tools for parsing m3u8 and mp4 files.
+*  @file plainview
 *  @author krad.io <iam@krad.io>
-*  @version 0.0.3
+*  @version 0.1.0
  */
 
 import Player from './player'
 
 class plainview {
   constructor(config) {
+    this.player                    = new Player(config.url)
+    this.player.onDownloadProgress = config.onDownloadProgress
 
-    // Called when media is loaded and ready to play. If playing is set to true, media will play immediately
-    this.onReady = () => {}
+    this.video                     = config.video
+    this.onSourceOpen              = this.onSourceOpen.bind(this)
 
-    // Called when media starts playing
-    this.onStart = () => {}
+    this.currentIdx = 0
 
-    // Called when media starts or resumes playing after pausing or buffering
-    this.onPlay = () => {}
+    this.player.configure().then(player => {
+      const mimeCodec = player.playlist.codecsString
+      if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
+        player.fetchSegments()
+        this.mediaSource = new window.MediaSource()
+        this.video.src = URL.createObjectURL(this.mediaSource);
+        this.mediaSource.addEventListener('sourceopen', this.onSourceOpen)
+      }
+    })
 
-    // Callback containing played and loaded progress as a fraction, and playedSeconds and loadedSeconds in seconds
-    // ◦  eg { played: 0.12, playedSeconds: 11.3, loaded: 0.34, loadedSeconds: 16.7 }
-    this.onProgress = () => {}
-
-    // Callback containing duration of the media, in seconds
-    this.onDuration = () => {}
-
-    // Called when media is paused
-    this.onPause = () => {}
-
-    // Called when media starts buffering
-    this.onBuffer = () => {}
-
-    // Called when media seeks with seconds parameter
-    this.onSeek = () => {}
-
-    // Called when media finishes playing
-    this.onEnded = () => {}
-
-    // Called when an error occurs whilst attempting to play media
-    this.onError = () => {}
   }
 
-  static canPlay(url) {
-    return false
+  onSourceOpen(e) {
+    URL.revokeObjectURL(this.video.src);
+    const mediaSource  = e.target
+    console.log(mediaSource.sourceBuffers);
+    const sourceBuffer = mediaSource.addSourceBuffer(this.player.playlist.codecsString)
+    const segment      = this.player.playlist.segments[this.currentIdx]
+
+    sourceBuffer.addEventListener('updateend', (e) => {
+      if (this.currentIdx >= this.player.playlist.segments.length) {
+        mediaSource.endOfStream()
+      } else {
+        console.log('get next segment');
+        this.appendSegment(mediaSource, sourceBuffer, this.nextSegment())
+      }
+    })
+
+    console.log('----- first call');
+    this.appendSegment(mediaSource, sourceBuffer, segment)
+
   }
 
-  seekTo(time) {   }
-  getCurrentTime() { return 0 }
-  getSecondsLoaded()	{ return 0 }
-  getDuration()	{ return 0 }
+  appendSegment(mediaSource, sourceBuffer, segment) {
+    console.log('==== call call call');
+    if (!segment) {
+      console.log('no segment - end of stream?');
+      return
+    }
+
+    if (segment.progress === 100.00) {
+      if (sourceBuffer.updating) {
+        setTimeout(() => { this.appendSegment(mediaSource, sourceBuffer, segment) }, 200)
+      } else {
+        sourceBuffer.appendBuffer(segment.data.buffer)
+        this.video.play()
+        this.appendSegment(mediaSource, sourceBuffer, this.nextSegment())
+      }
+
+    } else {
+      setTimeout(() => { this.appendSegment(mediaSource, sourceBuffer, segment) }, 200)
+      return
+    }
+  }
+
+  nextSegment() {
+    return this.player.playlist.segments[this.currentIdx++]
+  }
 
 }
+
 
 const requestFullscreen = (player) => {
     if (player.requestFullscreen) {
@@ -62,5 +88,6 @@ const requestFullscreen = (player) => {
     }
 }
 
-
+global.plainview  = plainview
+global.Player     = Player
 export default plainview

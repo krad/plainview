@@ -1,11 +1,8 @@
 const support = require('./support')
 
-import * as slugline from 'slugline/slugline'
+import * as slugline from '@krad/slugline'
 
 class Player {
-  static build(playlistURL) {
-    player.playlistURL   = playlistURL
-  }
 
   constructor(playlistURL) {
     this.playlistURL = playlistURL
@@ -18,10 +15,22 @@ class Player {
     return new Promise((resolve, reject) => {
       slugline.Playlist.fetch(this.playlistURL).then(playlist => {
         this.playlist = playlist
-        resolve(this)
+
+        if (playlist.codecs) {
+          resolve(this)
+        } else {
+
+          playlist.getCodecsInformation().then(codecs => {
+            this.codecs = playlist.codecs
+            resolve(this)
+          }).catch(err => {
+            reject(err)
+          })
+        }
+
       }).catch(err => {
         this.errors.push(err)
-        reject('Failed to fetch playlist')
+        reject(err)
       })
     })
   }
@@ -41,7 +50,11 @@ class Player {
       total += segmentProgress
     })
 
-    this._downloadProgress = total.toFixed(2)
+    this._downloadProgress = (total.toFixed(2) * 1)
+    if (this.onDownloadProgress) {
+      this.onDownloadProgress(this._downloadProgress)
+    }
+
   }
 
   get totalDuration() {
@@ -50,7 +63,7 @@ class Player {
   }
 
   nextFetchStarted(segment) {
-    console.log('starting nextFetch');
+    // console.log('starting nextFetch');
   }
 
   segmentDownloadProgress(progress) {
@@ -59,7 +72,6 @@ class Player {
 
   fetchSegments() {
     if (!this.playlist) { throw 'Player Misconfigured: Missing playlist' }
-    console.log(this.playlist.segments.map(s => s.uri));
 
     let stats = {}
     this.playlist.segments.forEach(s => { stats[s.uri] = 0 })

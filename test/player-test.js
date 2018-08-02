@@ -10,7 +10,7 @@ test.only('player behavior', t=> {
 })
 
 const playerConfigureTest = (t) => {
-  t.plan(9)
+  t.plan(11)
   t.timeoutAfter(3000)
   const url     = hostAndPort() + '/basic/krad.tv/tractor/vod.m3u8'
   const player  = new Player(url)
@@ -24,13 +24,16 @@ const playerConfigureTest = (t) => {
     t.ok(player.playlist, 'Player has playlist object now')
     t.equals('MediaPlaylist', player.playlist.constructor.name, 'MediaPlaylist object type')
 
+    t.ok(player.codecs, 'player had codec info')
+    t.deepEqual(player.codecs, ['avc1.42001E', 'mp4a.40.2'], 'player had correct codec info')
+
     t.ok(player.totalDuration, 'player had total duration')
     t.equals(player.totalDuration, 119.65063333333353, 'total duration was correct')
 
     t.notOk(player.downloadProgress, 'no download progress yet')
     player.fetchSegments()
 
-    setTimeout(() => { t.equals(100.00, player.downloadProgress, 'downloaded all segments') }, 2000)
+    setTimeout(() => { t.equals(100.00, player.downloadProgress, 'downloaded all segments') }, 1200)
 
   }).catch(err => {
     t.fail('Failed to fetch playlist:' + err)
