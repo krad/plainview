@@ -12,27 +12,39 @@
     <div>
       <h1>plainview</h1>
       <video id='video'></video><br />
-      <progress id='progress' value="0" max="100">0%</progress><br />
-      <button>Play</button>
-      <button>Pause</button>
-      <button>Mute</button>
-      <button>Unmute</button>
-      <button>Full Screen</button>
+      <progress id='playProgress' value="0" max="100">0%</progress><br />
+      <progress id='downloadProgress' value="0" max="100">0%</progress><br />
+      <button id='play' onclick='window.pv.play()' >Play</button>
+      <button id='mute' onclick='window.pv.mute()'>Mute</button>
+      <span id='time-code'></span>
     </div>
 
     <script src="http://localhost:1234/plainview.js" charset="utf-8"></script>
     <script type="text/javascript">
     (function() {
 
-      var progressElem = document.getElementById('progress')
+      var playProgressElem  = document.getElementById('playProgress')
+      var progressElem      = document.getElementById('downloadProgress')
+      var playElem          = document.getElementById('play')
+      var muteElem          = document.getElementById('mute')
+      var timecodeElem      = document.getElementById('time-code')
 
       var config = {
         url: 'http://0.0.0.0:8000/basic/krad.tv/tractor/vod.m3u8',
         video: document.getElementById('video'),
-        onDownloadProgress: (percentDone) => { progressElem.value = percentDone }
+        onPlayProgress: (percentDone, timecode) => {
+          playProgressElem.value = percentDone
+          timecodeElem.innerHTML = timecode
+        },
+        onDownloadProgress: (percentDone) => { progressElem.value = percentDone },
+        onPlay:   () => { playElem.innerHTML = 'Pause'; playElem.setAttribute('onclick', 'window.pv.pause()') },
+        onPause:  () => { playElem.innerHTML = 'Play'; playElem.setAttribute('onclick', 'window.pv.play()') },
+        onEnded:  () => { playElem.innerHTML = 'Replay'; playElem.setAttribute('onclick', 'window.pv.replay()') },
+        onMute:   () => { muteElem.innerHTML = 'Unmute'; muteElem.setAttribute('onclick', 'window.pv.unmute()') },
+        onUnmute: () => { muteElem.innerHTML = 'Mute'; muteElem.setAttribute('onclick', 'window.pv.mute()') },
       }
 
-      var pv = new plainview(config)
+      window.pv = new plainview(config)
 
     })()
     </script>

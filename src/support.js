@@ -90,56 +90,59 @@ function buildSupportMatrix() {
  *
  * @return {AVSupport}  AVSupport object populted with various codec support info
  */
-function AVSupport(){
-  this.codecs         = allAudioVideoCodecCombinations()
-  this.videoCodecs    = Object.keys(MPG_VIDEO_CODECS)
-  this.audioCodecs    = Object.keys(MPG_AUDIO_CODECS)
-  this.supportMatrix  = buildSupportMatrix()
-}
-
-
-/**
- * AVSupport.prototype.hasNativeHLSSupportFor - Checks if the browser has native HLS support (Safari)
- *
- * @param  {MediaSource} player video tag thingie
- * @return {Booelan}        true if video tag can take an HLS playlist directly
- */
-AVSupport.prototype.hasNativeHLSSupportFor = function(player) {
-  var supportsNativeHLS = player.canPlayType('application/vnd.apple.mpegurl')
-  if (supportsNativeHLS) {
-    return true
+class AVSupport {
+  constructor() {
+    this.codecs         = allAudioVideoCodecCombinations()
+    this.videoCodecs    = Object.keys(MPG_VIDEO_CODECS)
+    this.audioCodecs    = Object.keys(MPG_AUDIO_CODECS)
+    this.supportMatrix  = buildSupportMatrix()
   }
 
-  supportsNativeHLS = player.canPlayType('vnd.apple.mpegURL')
-  if (supportsNativeHLS) {
-    return true
-  }
+  /**
+   * AVSupport.prototype.hasNativeHLSSupportFor - Checks if the browser has native HLS support (Safari)
+   *
+   * @param  {MediaSource} player video tag thingie
+   * @return {Booelan}        true if video tag can take an HLS playlist directly
+   */
+  static hasNativeHLSSupportFor(player) {
+    var supportsNativeHLS = player.canPlayType('application/vnd.apple.mpegurl')
+    if (supportsNativeHLS) {
+      return true
+    }
 
-  supportsNativeHLS = player.canPlayType('application/x-mpegURL')
-  if (supportsNativeHLS) {
-    return true
-  }
+    supportsNativeHLS = player.canPlayType('vnd.apple.mpegURL')
+    if (supportsNativeHLS) {
+      return true
+    }
 
-  return false
-}
+    supportsNativeHLS = player.canPlayType('application/x-mpegURL')
+    if (supportsNativeHLS) {
+      return true
+    }
 
-/**
- * AVSupport.prototype.canSupport - Checks if the browser supports playback for certain media types
- *
- * @param  {String} codec  A string describing a codec.  Ex: avc1.42E01E,mp4a.40.2
- * @return {Boolean}       true is it supports playback
- */
-AVSupport.prototype.canSupport = function(codec) {
-  var mimeType = mimeTypeFor(codec)
-  if (window.MediaSource) {
-    var checkStr
-    if (mimeType) { checkStr = buildCodecTypeString(mimeType, codec) }
-    else { checkStr = codec }
-
-    return window.MediaSource.isTypeSupported(checkStr)
-  } else {
     return false
   }
+
+  /**
+   * AVSupport.prototype.canSupport - Checks if the browser supports playback for certain media types
+   *
+   * @param  {String} codec  A string describing a codec.  Ex: avc1.42E01E,mp4a.40.2
+   * @return {Boolean}       true is it supports playback
+   */
+  static canSupport(codec) {
+    var mimeType = mimeTypeFor(codec)
+    if (window.MediaSource) {
+      var checkStr
+      if (mimeType) { checkStr = buildCodecTypeString(mimeType, codec) }
+      else { checkStr = codec }
+
+      return window.MediaSource.isTypeSupported(checkStr)
+    } else {
+      return false
+    }
+  }
+
 }
+
 
 export default AVSupport
