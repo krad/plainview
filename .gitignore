@@ -76,6 +76,7 @@ typings/
 # Serverless directories
 .serverless
 
+apple-basic-ts/
 apple-advanced-fmp4/
 krad.tv/
 *.mp4

@@ -8,11 +8,27 @@ require("babel-polyfill");
 import Player from './player'
 import AVSupport from './support'
 import { percentageComplete, makeTimeCode } from './time-code-helpers'
+import * as slugline from '../../slugline/distribution/slugline'
 
 class plainview {
 
   constructor(url) {
-    this.player                    = new Player(url)
+    this.player       = new Player(url)
+    this.onSourceOpen = this.onSourceOpen.bind(this)
+
+    /// Stub out everything with no operations until the user configures them
+    const NOP               = () => {}
+    this.onCanPlay          = NOP
+    this.onPlayProgress     = NOP
+    this.onDownloadProgress = NOP
+    this.onPlay             = NOP
+    this.onPause            = NOP
+    this.onReplay           = NOP
+    this.onMute             = NOP
+    this.onUnmute           = NOP
+    this.onEnded            = NOP
+
+
     // this.video.onloadstart = (x) => { }
     // this.video.ondurationchange = (x) => { }
     // this.video.onloadedmetadata = (x) => { }
@@ -21,7 +37,6 @@ class plainview {
     // this.video.oncanplay = (x) => { }
     // this.video.oncanplaythrough = (x) => { }
     // this.video.addEventListener('seeked', (x) => { })
-    this.onSourceOpen = this.onSourceOpen.bind(this)
   }
 
   set video(val) {
@@ -45,20 +60,22 @@ class plainview {
 
 
     this.player.configure().then(player => {
+      const timecode  = makeTimeCode(this.video.currentTime)
+      const total     = makeTimeCode(this.player.totalDuration)
+      this.onPlayProgress(0, timecode, total)
+
       if (AVSupport.hasNativeHLSSupportFor(this.video)) {
         this.video.src = player.playlist.url
       } else {
-        const mimeCodec = player.playlist.codecsString
-
-        const timecode  = makeTimeCode(this.video.currentTime)
-        const total     = makeTimeCode(this.player.totalDuration)
-        this.onPlayProgress(0, timecode, total)
-
+        let mimeCodec = player.playlist.codecsString
         if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
           player.fetchSegments()
           this.mediaSource  = new window.MediaSource()
+          //console.log(this.mediaSource);
           this.video.src    = URL.createObjectURL(this.mediaSource);
           this.mediaSource.addEventListener('sourceopen', this.onSourceOpen)
+        } else {
+          console.log('Codecs not supported', mimeCodec);
         }
       }
     })
@@ -80,6 +97,7 @@ class plainview {
   replay() {
     this.video.currentTime = 0
     this.onReplay()
+    this.play()
   }
 
   pause() {
@@ -97,37 +115,50 @@ class plainview {
     this.onUnmute()
   }
 
+  requestFullScreen() {
+    if (this.video.requestFullscreen) {
+      this.video.requestFullscreen();
+    } else if (this.video.mozRequestFullScreen) {
+      this.video.mozRequestFullScreen(); // Firefox
+    } else if (this.video.webkitRequestFullscreen) {
+      this.video.webkitRequestFullscreen(); // Chrome and Safari
+    }
+  }
+
   async onSourceOpen(e) {
     URL.revokeObjectURL(this._video.src);
     const mediaSource  = e.target
-    const sourceBuffer = mediaSource.addSourceBuffer(this.player.playlist.codecsString)
 
-    for (let segment of this.player.playlist.segments) {
-      await segment.fetchPromise
-      await new Promise(async (resolve, reject) => {
-        sourceBuffer.appendBuffer(segment.data.buffer)
-        sourceBuffer.onupdateend = (e) => {
-          sourceBuffer.onupdateend = undefined
-          resolve()
+    let codecsString = this.player.playlist.codecsString
+    let sourceBuffer = mediaSource.addSourceBuffer(codecsString)
+
+    let checkForWork = () => {
+      setTimeout(() => {
+        if (this.player.segments.length > 0) {
+          this.video.autoplay = true
+
+          new Promise(async (resolve, reject) => {
+            const segment = this.player.segments.shift()
+            sourceBuffer.appendBuffer(segment)
+            sourceBuffer.onupdateend = (e) => {
+              sourceBuffer.onupdateend = undefined
+              resolve()
+            }
+          }).then(_ => {
+            checkForWork()
+          })
+
         }
-      })
+      }, 1500)
     }
-    mediaSource.endOfStream()
+
+    checkForWork()
 
   }
 
 }
 
 
-const requestFullscreen = (player) => {
-    if (player.requestFullscreen) {
-      player.requestFullscreen();
-    } else if (player.mozRequestFullScreen) {
-      player.mozRequestFullScreen(); // Firefox
-    } else if (player.webkitRequestFullscreen) {
-      player.webkitRequestFullscreen(); // Chrome and Safari
-    }
-}
 
 global.plainview  = plainview
 export default plainview

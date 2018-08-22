@@ -41,7 +41,6 @@
       const onMute   = () => { muteElem.innerHTML = 'Unmute'; muteElem.setAttribute('onclick', 'window.pv.unmute()') }
       const onUnmute = () => { muteElem.innerHTML = 'Mute'; muteElem.setAttribute('onclick', 'window.pv.mute()') }
 
-
       let pv                = new plainview('http://0.0.0.0:8000/basic/krad.tv/tractor/vod.m3u8')
       pv.onPlayProgress     = onPlayProgress
       pv.onDownloadProgress = onDownloadProgress

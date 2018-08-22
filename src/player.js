@@ -1,14 +1,22 @@
 const support = require('./support')
 
-import * as slugline from '@krad/slugline'
+// import * as slugline from '@krad/slugline'
+import * as slugline from '../../slugline/distribution/slugline'
+// const worker = new Worker('./muxer', {type:'module'})
+import Muxer from './muxer'
 
 class Player {
 
   constructor(playlistURL) {
-    this.playlistURL = playlistURL
-    this.errors      = []
-    this.nextFetchStarted           = this.nextFetchStarted.bind(this)
-    this.segmentDownloadProgress    = this.segmentDownloadProgress.bind(this)
+    this.playlistURL              = playlistURL
+    this.errors                   = []
+    this.nextFetchStarted         = this.nextFetchStarted.bind(this)
+    this.nextFetchCompleted       = this.nextFetchCompleted.bind(this)
+    this.segmentDownloadProgress  = this.segmentDownloadProgress.bind(this)
+    this.playlistRefreshed        = this.playlistRefreshed.bind(this)
+    this.segments                 = []
+    this.muxer = new Muxer()
+    this.cnt = 0
   }
 
   configure() {
@@ -62,7 +70,24 @@ class Player {
   }
 
   nextFetchStarted(segment) {
-    // console.log('starting nextFetch');
+    //console.log('starting nextFetch', segment);
+  }
+
+  nextFetchCompleted(segment) {
+    if (this.playlist.segmentsType === 'ts') {
+      this.muxer.addJob(segment)
+      this.muxer.processJob().then(res => {
+        res.forEach(segment => this.segments.push(segment))
+      }).catch(err => {
+        console.log(err);
+      })
+    } else {
+      this.segments.push(segment)
+    }
+  }
+
+  playlistRefreshed() {
+    console.log('playlist refreshed');
   }
 
   segmentDownloadProgress(progress) {
@@ -72,11 +97,37 @@ class Player {
   fetchSegments() {
     if (!this.playlist) { throw 'Player Misconfigured: Missing playlist' }
 
+    if (this.playlist.segmentsType === 'ts') {
+      this.segments.forEach(segment => {
+        segment.process = async () => {
+          return new Promise(async (resolve, reject) => {
+            await segment.fetchPromise
+            const ts = slugline.TransportStream.parse(segment.data)
+            this.transmuxer.setCurrentStream(ts)
+            let rs   = this.transmuxer.build()
+
+            let result = []
+            if (this.initSegment === undefined) {
+              this.initSegment = this.transmuxer.buildInitializationSegment(rs[0])
+              segment.init = this.initSegment
+            }
+
+            segment.body = this.transmuxer.buildMediaSegment(rs)
+            resolve()
+          })
+        }
+      })
+    }
     let stats = {}
     this.playlist.segments.forEach(s => { stats[s.uri] = 0 })
     this.downloadStats = stats
 
-    this.playlist.fetchSequentially(this.nextFetchStarted, this.segmentDownloadProgress)
+    if (this.playlist.type === 'LIVE' || this.playlist.type === 'EVENT') {
+      console.log('starting auto refresh');
+      this.playlist.startAutoRefresh(this.playlistRefreshed)
+    }
+
+    this.playlist.fetchSequentially(this.nextFetchStarted, this.nextFetchCompleted, this.segmentDownloadProgress)
   }
 
 }
