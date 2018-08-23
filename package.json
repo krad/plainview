@@ -2,10 +2,11 @@
   "name": "@krad/plainview",
   "version": "1.2.2",
   "description": "HTML5 video player",
-  "main": "src/plainview.js",
+  "main": "distribution/plainview.js",
   "scripts": {
     "test": "babel-tape-runner test/**/*.js | tap-spec",
-    "autotest": "tape-watch -c -r babel-register test/**/*-test.js | tap-spec"
+    "autotest": "tape-watch -c -r babel-register test/**/*-test.js | tap-spec",
+    "build": "babel src --presets babel-preset-es2015 --out-dir distribution"
   },
   "author": "iam@krad.io",
   "license": "MIT",
