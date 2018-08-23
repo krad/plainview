@@ -1,8 +1,6 @@
 const support = require('./support')
 
-// import * as slugline from '@krad/slugline'
-import * as slugline from '../../slugline/distribution/slugline'
-// const worker = new Worker('./muxer', {type:'module'})
+import * as slugline from '@krad/slugline'
 import Muxer from './muxer'
 
 class Player {

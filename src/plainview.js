@@ -8,7 +8,7 @@ require("babel-polyfill");
 import Player from './player'
 import AVSupport from './support'
 import { percentageComplete, makeTimeCode } from './time-code-helpers'
-import * as slugline from '../../slugline/distribution/slugline'
+import * as slugline from '@krad/slugline'
 
 class plainview {
 

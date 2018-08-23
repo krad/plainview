@@ -1,4 +1,4 @@
-import * as slugline from '../../slugline/distribution/slugline'
+import * as slugline from '@krad/slugline'
 
 export default class Muxer {
   constructor() {
