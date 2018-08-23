@@ -6,3 +6,4 @@ src
 coverage/
 tests/
 .travis.yml
+.cache
