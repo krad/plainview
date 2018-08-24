@@ -27,7 +27,7 @@ class Player {
         } else {
 
           playlist.getCodecsInformation().then(codecs => {
-            this.codecs = playlist.codecs
+            this.codecs = codecs
             resolve(this)
           }).catch(err => {
             reject(err)
