@@ -27,16 +27,7 @@ class plainview {
     this.onMute             = NOP
     this.onUnmute           = NOP
     this.onEnded            = NOP
-
-
-    // this.video.onloadstart = (x) => { }
-    // this.video.ondurationchange = (x) => { }
-    // this.video.onloadedmetadata = (x) => { }
-    // this.video.onloadeddata = (x) => { }
-    // this.video.onprogress = (x) => { }
-    // this.video.oncanplay = (x) => { }
-    // this.video.oncanplaythrough = (x) => { }
-    // this.video.addEventListener('seeked', (x) => { })
+    this.onError            = NOP
   }
 
   set video(val) {
@@ -58,6 +49,10 @@ class plainview {
       this.onCanPlay()
     })
 
+    this.video.addEventListener('error', (e) => {
+      this.onError()
+    })
+
 
     this.player.configure().then(player => {
       const timecode  = makeTimeCode(this.video.currentTime)
@@ -65,11 +60,12 @@ class plainview {
       this.onPlayProgress(0, timecode, total)
 
       if (AVSupport.hasNativeHLSSupportFor(this.video)) {
-        this.video.src = player.playlist.url
+        this.video.src      = player.playlist.url
+        this.video.autoplay = true
       } else {
         let mimeCodec = player.playlist.codecsString
         if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
-          player.fetchSegments()
+          player.fetchSegments().catch(err => { this.onError(err) })
           this.mediaSource  = new window.MediaSource()
           //console.log(this.mediaSource);
           this.video.src    = URL.createObjectURL(this.mediaSource);

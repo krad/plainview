@@ -124,7 +124,7 @@ class Player {
       this.playlist.startAutoRefresh(this.playlistRefreshed)
     }
 
-    this.playlist.fetchSequentially(this.nextFetchStarted, this.nextFetchCompleted, this.segmentDownloadProgress)
+    return this.playlist.fetchSequentially(this.nextFetchStarted, this.nextFetchCompleted, this.segmentDownloadProgress)
   }
 
 }
