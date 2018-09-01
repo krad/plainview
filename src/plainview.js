@@ -13,7 +13,7 @@ import Manson from '@krad/manson'
 
 class plainview {
 
-  constructor(url, logLevel) {
+  constructor(url) {
     this.player       = new Player(url)
     this.onSourceOpen = this.onSourceOpen.bind(this)
 
@@ -28,10 +28,14 @@ class plainview {
     this.onMute             = NOP
     this.onUnmute           = NOP
     this.onEnded            = NOP
+    this.onStall            = NOP
     this.onError            = NOP
 
     Manson.setup()
-    Manson.level = logLevel || -1
+  }
+
+  set logLevel(val) {
+    Manson.level = val
   }
 
   set video(val) {
@@ -55,22 +59,26 @@ class plainview {
       this.onCanPlay()
     })
 
+    this.video.addEventListener('stalled', (e) => {
+      Manson.trace('player stalled event')
+      this.onStall()
+    })
+
     this.video.addEventListener('error', (e) => {
       Manson.error(`player reported error ${e}`)
       this.onError()
     })
 
-
-    this.player.configure().then(player => {
-      const timecode  = makeTimeCode(this.video.currentTime)
-      const total     = makeTimeCode(this.player.totalDuration)
-      this.onPlayProgress(0, timecode, total)
-
-      if (AVSupport.hasNativeHLSSupportFor(this.video)) {
-        Manson.debug('browser has native HLS support.  delegating responsibilities')
-        this.video.src      = player.playlist.url
-        this.video.autoplay = true
-      } else {
+    if (AVSupport.hasNativeHLSSupportFor(this.video)) {
+      Manson.debug('browser has native HLS support.  delegating responsibilities')
+      this.video.src      = this.player.playlistURL
+      this.video.autoplay = true
+    } else {
+      Manson.debug('browser does not support HLS. assuming responsibilities')
+      this.player.configure().then(player => {
+        const timecode  = makeTimeCode(this.video.currentTime)
+        const total     = makeTimeCode(this.player.totalDuration)
+        this.onPlayProgress(0, timecode, total)
         Manson.debug('browser does not support HLS.')
 
         let mimeCodec = player.playlist.codecsString
@@ -86,10 +94,9 @@ class plainview {
         } else {
           Manson.error(`codecs not supported ${mimeCodec}`)
         }
-      }
-    }).catch(err => {
-      this.onError(err)
-    })
+
+      }).catch(err => { this.onError(err) })
+    }
   }
 
   set onDownloadProgress(cb) {

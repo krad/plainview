@@ -12,7 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "@krad/manson": "0.0.2",
-    "@krad/slugline": "^1.2.9",
+    "@krad/slugline": "^1.2.11",
     "babel-polyfill": "^6.26.0"
   },
   "devDependencies": {
