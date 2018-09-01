@@ -57,6 +57,7 @@ class plainview {
     this.video.addEventListener('canplay', (_) => {
       Manson.trace('player canplay event')
       this.onCanPlay()
+      this.play()
     })
 
     this.video.addEventListener('stalled', (e) => {
