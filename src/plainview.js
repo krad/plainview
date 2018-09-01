@@ -9,10 +9,11 @@ import Player from './player'
 import AVSupport from './support'
 import { percentageComplete, makeTimeCode } from './time-code-helpers'
 import * as slugline from '@krad/slugline'
+import Manson from '@krad/manson'
 
 class plainview {
 
-  constructor(url) {
+  constructor(url, logLevel) {
     this.player       = new Player(url)
     this.onSourceOpen = this.onSourceOpen.bind(this)
 
@@ -28,6 +29,9 @@ class plainview {
     this.onUnmute           = NOP
     this.onEnded            = NOP
     this.onError            = NOP
+
+    Manson.setup()
+    Manson.level = logLevel || -1
   }
 
   set video(val) {
@@ -42,14 +46,17 @@ class plainview {
     })
 
     this.video.addEventListener('ended', (e) => {
+      Manson.trace('player ended event')
       this.onEnded()
     })
 
     this.video.addEventListener('canplay', (_) => {
+      Manson.trace('player canplay event')
       this.onCanPlay()
     })
 
     this.video.addEventListener('error', (e) => {
+      Manson.error(`player reported error ${e}`)
       this.onError()
     })
 
@@ -60,20 +67,28 @@ class plainview {
       this.onPlayProgress(0, timecode, total)
 
       if (AVSupport.hasNativeHLSSupportFor(this.video)) {
+        Manson.debug('browser has native HLS support.  delegating responsibilities')
         this.video.src      = player.playlist.url
         this.video.autoplay = true
       } else {
+        Manson.debug('browser does not support HLS.')
+
         let mimeCodec = player.playlist.codecsString
         if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
-          player.fetchSegments().catch(err => { this.onError(err) })
+          player.fetchSegments().catch(err => {
+            Manson.error(`Error fetching segments ${err}`)
+            this.onError(err)
+          })
+
           this.mediaSource  = new window.MediaSource()
-          //console.log(this.mediaSource);
           this.video.src    = URL.createObjectURL(this.mediaSource);
           this.mediaSource.addEventListener('sourceopen', this.onSourceOpen)
         } else {
-          console.log('Codecs not supported', mimeCodec);
+          Manson.error(`codecs not supported ${mimeCodec}`)
         }
       }
+    }).catch(err => {
+      this.onError(err)
     })
   }
 
@@ -86,32 +101,38 @@ class plainview {
   }
 
   play() {
+    Manson.trace('user played')
     this._video.play()
     this.onPlay()
   }
 
   replay() {
+    Manson.trace('user replayed')
     this.video.currentTime = 0
     this.onReplay()
     this.play()
   }
 
   pause() {
+    Manson.trace('user paused')
     this._video.pause()
     this.onPause()
   }
 
   mute() {
+    Manson.trace('user muted playback')
     this._video.muted = true
     this.onMute()
   }
 
   unmute() {
+    Manson.trace('user unmuted playback')
     this._video.muted = false
     this.onUnmute()
   }
 
   requestFullScreen() {
+    Manson.trace('user requested fullscreen')
     if (this.video.requestFullscreen) {
       this.video.requestFullscreen();
     } else if (this.video.mozRequestFullScreen) {
@@ -132,7 +153,6 @@ class plainview {
       setTimeout(() => {
         if (this.player.segments.length > 0) {
           this.video.autoplay = true
-          console.log(this.video.error)
           new Promise(async (resolve, reject) => {
             const segment = this.player.segments.shift()
             sourceBuffer.appendBuffer(segment)
@@ -148,9 +168,7 @@ class plainview {
         }
       }, 500)
     }
-
     checkForWork()
-
   }
 
 }

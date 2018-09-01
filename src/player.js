@@ -1,13 +1,13 @@
 const support = require('./support')
 
 import * as slugline from '@krad/slugline'
+import Manson from '@krad/manson'
 import Muxer from './muxer'
 
 class Player {
 
   constructor(playlistURL) {
     this.playlistURL              = playlistURL
-    this.errors                   = []
     this.nextFetchStarted         = this.nextFetchStarted.bind(this)
     this.nextFetchCompleted       = this.nextFetchCompleted.bind(this)
     this.segmentDownloadProgress  = this.segmentDownloadProgress.bind(this)
@@ -18,24 +18,30 @@ class Player {
   }
 
   configure() {
+    Manson.debug('configuring player')
     return new Promise((resolve, reject) => {
+      Manson.debug('fetching playlist')
+
       slugline.Playlist.fetch(this.playlistURL).then(playlist => {
         this.playlist = playlist
 
         if (playlist.codecs) {
+          Manson.debug('playlist contained codecs information')
           resolve(this)
         } else {
 
+          Manson.debug('fetching codecs information')
           playlist.getCodecsInformation().then(codecs => {
             this.codecs = codecs
             resolve(this)
           }).catch(err => {
+            Manson.error('failed to fetch codecs information')
             reject(err)
           })
         }
 
       }).catch(err => {
-        this.errors.push(err)
+        Manson.error('failed to fetch playlist')
         reject(err)
       })
     })
@@ -68,16 +74,17 @@ class Player {
   }
 
   nextFetchStarted(segment) {
-    console.log('starting nextFetch', segment.id);
+    Manson.debug(`fetching segment #${segment.id} - ${segment.url}`)
   }
 
   nextFetchCompleted(segment) {
+    Manson.info(`fetched segment #${segment.id} - ${segment.url}`)
     if (this.playlist.segmentsType === 'ts') {
       this.muxer.addJob(segment)
       this.muxer.processJob().then(res => {
         res.forEach(segment => this.segments.push(segment))
       }).catch(err => {
-        console.log(err);
+        Manson.error(`Error transcoding ${err}`)
       })
     } else {
       this.segments.push(segment)
@@ -85,7 +92,7 @@ class Player {
   }
 
   playlistRefreshed() {
-    // console.log('playlist refreshed');
+    Manson.trace('refreshed playlist')
   }
 
   segmentDownloadProgress(progress) {
@@ -94,28 +101,6 @@ class Player {
 
   fetchSegments() {
     if (!this.playlist) { throw 'Player Misconfigured: Missing playlist' }
-
-    if (this.playlist.segmentsType === 'ts') {
-      this.segments.forEach(segment => {
-        segment.process = async () => {
-          return new Promise(async (resolve, reject) => {
-            await segment.fetchPromise
-            const ts = slugline.TransportStream.parse(segment.data)
-            this.transmuxer.setCurrentStream(ts)
-            let rs   = this.transmuxer.build()
-
-            let result = []
-            if (this.initSegment === undefined) {
-              this.initSegment = this.transmuxer.buildInitializationSegment(rs[0])
-              segment.init = this.initSegment
-            }
-
-            segment.body = this.transmuxer.buildMediaSegment(rs)
-            resolve()
-          })
-        }
-      })
-    }
     let stats = {}
     this.playlist.segments.forEach(s => { stats[s.uri] = 0 })
     this.downloadStats = stats
