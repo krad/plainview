@@ -57,7 +57,6 @@ class plainview {
     this.video.addEventListener('canplay', (_) => {
       Manson.trace('player canplay event')
       this.onCanPlay()
-      this.play()
     })
 
     this.video.addEventListener('stalled', (e) => {
@@ -72,8 +71,9 @@ class plainview {
 
     if (AVSupport.hasNativeHLSSupportFor(this.video)) {
       Manson.debug('browser has native HLS support.  delegating responsibilities')
-      this.video.src      = this.player.playlistURL
       this.video.autoplay = true
+      this.mute()
+      this.video.src      = this.player.playlistURL
     } else {
       Manson.debug('browser does not support HLS. assuming responsibilities')
       this.player.configure().then(player => {
