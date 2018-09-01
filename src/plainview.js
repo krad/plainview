@@ -136,8 +136,8 @@ class plainview {
       setTimeout(() => {
         if (this.player.segments.length > 0) {
           this.video.autoplay = true
+          console.log(this.video.error)
           new Promise(async (resolve, reject) => {
-            console.log('segment');
             const segment = this.player.segments.shift()
             sourceBuffer.appendBuffer(segment)
             sourceBuffer.onupdateend = (e) => {
@@ -150,7 +150,7 @@ class plainview {
         } else {
           checkForWork()
         }
-      }, 1000)
+      }, 500)
     }
 
     checkForWork()

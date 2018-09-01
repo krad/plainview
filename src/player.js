@@ -68,7 +68,7 @@ class Player {
   }
 
   nextFetchStarted(segment) {
-    //console.log('starting nextFetch', segment);
+    console.log('starting nextFetch', segment.id);
   }
 
   nextFetchCompleted(segment) {
@@ -85,7 +85,7 @@ class Player {
   }
 
   playlistRefreshed() {
-    console.log('playlist refreshed');
+    // console.log('playlist refreshed');
   }
 
   segmentDownloadProgress(progress) {
@@ -121,7 +121,6 @@ class Player {
     this.downloadStats = stats
 
     if (this.playlist.type === 'LIVE' || this.playlist.type === 'EVENT') {
-      console.log('starting auto refresh');
       this.playlist.startAutoRefresh(this.playlistRefreshed)
     }
 
