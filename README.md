@@ -15,3 +15,22 @@ It provides a number of functions for controlling playback and a number of event
 Here is a react component demonstrating how you can skin the player: ** COMING SOON **
 
 Here is a vanilla example showing how plainview can play different types of HLS playlists:  ** COMING SOON **
+
+
+Testing
+=======
+
+plainview uses `tape`, `tap-spec` `browserify`, `babelify`, and `testling` to run a suite of in browser tests.
+
+`tape`, `tap-spec`, and `babelify` are the only libraries packaged as development dependencies.  The other tools need to be available on the system.
+
+To setup an environment for testing, run the following:
+```
+npm install
+npm install browserify testling -g
+```
+
+After the above commands have successfully completed you can then run:
+```
+npm t
+```

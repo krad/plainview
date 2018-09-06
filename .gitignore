@@ -85,5 +85,6 @@ krad.tv/
 *.mp3
 distribution
 dist
+testBundle/
 # End of https://www.gitignore.io/api/node
 

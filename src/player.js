@@ -1,12 +1,15 @@
-const support = require('./support')
-
 import * as slugline from '@krad/slugline'
 import Manson from '@krad/manson'
 import Muxer from './muxer'
 
 class Player {
 
-  constructor(playlistURL) {
+  constructor(playlistURL, codecs) {
+    if (codecs) {
+      try { this.codecs = JSON.parse(codecs) }
+      catch (e) { this.codecs = undefined }
+    }
+    this.codecs                   = codecs
     this.playlistURL              = playlistURL
     this.nextFetchStarted         = this.nextFetchStarted.bind(this)
     this.nextFetchCompleted       = this.nextFetchCompleted.bind(this)
@@ -17,6 +20,13 @@ class Player {
     this.cnt = 0
   }
 
+  get codecsString() {
+    if (this.playlist.codecs) {
+      return this.playlist.codecsString
+    }
+    return 'video/mp4; codecs="' + this.codecs.join(',') + '"'
+  }
+
   configure() {
     Manson.debug('configuring player')
     return new Promise((resolve, reject) => {
@@ -25,7 +35,7 @@ class Player {
       slugline.Playlist.fetch(this.playlistURL).then(playlist => {
         this.playlist = playlist
 
-        if (playlist.codecs) {
+        if (playlist.codecs || this.codecs) {
           Manson.debug('playlist contained codecs information')
           resolve(this)
         } else {
@@ -41,6 +51,7 @@ class Player {
         }
 
       }).catch(err => {
+        console.log(err);
         Manson.error('failed to fetch playlist')
         reject(err)
       })
@@ -100,6 +111,7 @@ class Player {
   }
 
   fetchSegments() {
+    Manson.info('beginning segments fetch loop...')
     if (!this.playlist) { throw 'Player Misconfigured: Missing playlist' }
     let stats = {}
     this.playlist.segments.forEach(s => { stats[s.uri] = 0 })

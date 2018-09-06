@@ -1,10 +1,10 @@
-const express    = require('express')
-const path       = require('path')
-const http       = require('http')
-const app        = express()
-const cors 	 = require('cors')
+const express = require('express')
+const path    = require('path')
+const http    = require('http')
+const app     = express()
+const cors 	  = require('cors')
 
-const serverPort = 8000
+const serverPort = process.env.PORT
 
 app.use(cors({
   exposedHeaders: ['Location', 'Content-Length'],
