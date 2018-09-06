@@ -1,3 +1,5 @@
+const support = require('./support')
+
 import * as slugline from '@krad/slugline'
 import Manson from '@krad/manson'
 import Muxer from './muxer'
@@ -21,9 +23,6 @@ class Player {
   }
 
   get codecsString() {
-    if (this.playlist.codecs) {
-      return this.playlist.codecsString
-    }
     return 'video/mp4; codecs="' + this.codecs.join(',') + '"'
   }
 
@@ -111,7 +110,7 @@ class Player {
   }
 
   fetchSegments() {
-    Manson.info('beginning segments fetch loop...')
+    Manson.info('beginning segments fetch loo')
     if (!this.playlist) { throw 'Player Misconfigured: Missing playlist' }
     let stats = {}
     this.playlist.segments.forEach(s => { stats[s.uri] = 0 })

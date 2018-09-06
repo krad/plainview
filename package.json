@@ -29,7 +29,9 @@
     "server": "./test/fixtures/serve.js",
     "files": "test/*-test.js",
     "browsers": [
-      "chrome"
+      "chrome/latest",
+      "firefox/latest",
+      "iphone"
     ]
   }
 }
