@@ -8,7 +8,6 @@ import Manson from '@krad/manson'
 
 class plainview {
   constructor(config) {
-    this.onSourceOpen = this.onSourceOpen.bind(this)
     /// Stub out everything with no operations until the user configures them
     const NOP               = () => {}
     this.onCanPlay          = NOP
@@ -27,9 +26,6 @@ class plainview {
 
   setLogLevel(val) { Manson.level = val }
 
-  onSourceOpen() {
-
-  }
 }
 
 export default plainview

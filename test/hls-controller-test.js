@@ -85,7 +85,7 @@ test('configuring a controller with prior knowledge of codecs', t=> {
 
 test('fetching segments from the playlist WITHOUT prior codec knowledge', t=> {
   t.plan(3)
-  t.timeoutAfter(3000)
+  t.timeoutAfter(10000)
 
   const url    = resolve(location.href, '/basic/krad.tv/tractor/vod.m3u8')
   const config = { url: url }
@@ -109,7 +109,7 @@ test('fetching segments from the playlist WITHOUT prior codec knowledge', t=> {
 
 test('fetching segments from the playlist WITH prior codec knowledge', t=> {
   t.plan(3)
-  t.timeoutAfter(3000)
+  t.timeoutAfter(10000)
 
   const url    = resolve(location.href, '/basic/krad.tv/tractor/vod.m3u8')
   const config = {

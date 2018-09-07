@@ -1,6 +1,7 @@
 require('@babel/polyfill')
 import * as slugline from '@krad/slugline'
 import Manson from '@krad/manson'
+import serialPromise from './serial-promise'
 
 class HLSController {
 
@@ -25,7 +26,7 @@ class HLSController {
     let requests = []
     if (!this.playlist) { requests.push(this.fetchPlaylist) }
     if (!this.codecs) { requests.push(this.fetchCodecInfo) }
-    return promiseSerial(requests)
+    return serialPromise(requests)
   }
 
   set codecs(val) {
@@ -42,6 +43,11 @@ class HLSController {
 
   get codecs() { return this._codecs }
 
+  /**
+   * get segmentsType - Returns the segment types associated with the playlist
+   *
+   * @return {String}  'ts' for transport streams. 'fmp4' for fragmented mp4s
+   */
   get segmentsType() {
     if (this.playlist) {
       return this.playlist.segmentsType
@@ -88,15 +94,35 @@ class HLSController {
     })
   }
 
+
+  /**
+   * nextFetchStarted - Called when the controller begins to fetch the next segment
+   *
+   * @param  {Segment} segment The Segment object that will be fetched
+   */
   nextFetchStarted(segment) {
     Manson.debug(`fetching segment #${segment.id} - ${segment.url}`)
   }
 
+  /**
+   * nextFetchCompleted - Called when a segment fetch has been completed
+   * Has a side effect of calling this.segmentFetchedCallback
+   *
+   * @param  {Uint8Array} segment Raw byte data fetched for a segment
+   */
   nextFetchCompleted(segment) {
     Manson.info(`fetched segment #${segment.id} - ${segment.url}`)
     this.segmentFetchedCallback(segment)
   }
 
+
+  /**
+   * fetchSegments - Begins fetching segments in a playlist sequentially
+   * If a playlist is of type LIVE or EVENT it will periodically refresh the playlist
+   * and fetch all segments appended to it
+   *
+   * @return {Promise} A promise of the fetch routine
+   */
   fetchSegments() {
     Manson.info('beginning segments fetch loop...')
     if (!this.playlist) { throw 'Player Misconfigured: Missing playlist' }
@@ -115,10 +141,5 @@ class HLSController {
   }
 
 }
-
-const promiseSerial = funcs =>
-  funcs.reduce((promise, func) =>
-    promise.then(result => func().then(Array.prototype.concat.bind(result))),
-    Promise.resolve([]))
 
 export default HLSController

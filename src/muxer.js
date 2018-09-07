@@ -2,38 +2,44 @@ import * as slugline from '@krad/slugline'
 import Manson from '@krad/manson'
 
 export default class Muxer {
+
   constructor() {
-    this.tasks      = []
     this.transmuxer = new slugline.Transmuxer()
   }
 
-  addJob(bytes) {
-    Manson.trace('adding new job to muxer')
-    this.tasks.push(bytes)
-  }
 
-  async processJob() {
+  /**
+   * transcode - Transmuxes a transport stream segment into a fmp4 segment
+   *
+   * @param  {Uint8Array} bytes An array of unsigned 8 bit integers representing the TS segment
+   * @return {Promise<Array<Uint8Array>>} Returns an array of Uint8Array.  Arrays greater than 1 in length mean an init segment is at the front
+   */
+  transcode(bytes) {
+    Manson.info('transcoding new segment')
     return new Promise((resolve, reject) => {
-      const segment = this.tasks.shift()
+      Manson.debug(`parsing segment...`)
 
-      Manson.info(`parsing segment #${segment.id}`)
-      const ts      = slugline.TransportStream.parse(segment)
+      const ts = slugline.TransportStream.parse(bytes)
+      Manson.debug('segment parsed.')
+
+      Manson.debug('starting transmux...')
       this.transmuxer.setCurrentStream(ts)
-
-      Manson.trace(`transmuxing segment #${segment.id}`)
-      let res       = this.transmuxer.build()
+      Manson.debug('setup state...')
+      let res = this.transmuxer.build()
+      Manson.debug('transmux struct built.')
 
       let result = []
-
       if (this.initSegment === undefined) {
-        Manson.trace(`building init info from segment #${segment.id}`)
+        Manson.debug('building init segment...')
         this.initSegment = this.transmuxer.buildInitializationSegment(res[0])
         result.push(this.initSegment)
       }
 
-      Manson.trace(`building media info from segment #${segment.id}`)
+      Manson.debug('building media info from segment...')
       let media = this.transmuxer.buildMediaSegment(res)
       result.push(media)
+
+      Manson.debug('transmuxing complete.')
       resolve(result)
     })
   }

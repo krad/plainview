@@ -24,12 +24,16 @@
     "tap-spec": "^5.0.0",
     "tape": "^4.9.1"
   },
-  "browserify": { "transform": ["babelify"] },
+  "browserify": {
+    "transform": [
+      "babelify"
+    ]
+  },
   "testling": {
     "server": "./test/fixtures/serve.js",
     "files": "test/*-test.js",
     "browsers": [
-      "firefox/latest"
+      "chrome/latest"
     ]
   }
 }

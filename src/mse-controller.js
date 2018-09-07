@@ -2,7 +2,6 @@ import Manson from '@krad/manson'
 
 class MSEController {
   constructor(mimeCodec) {
-    this.onSourceOpen = this.onSourceOpen.bind(this)
     this.appendBuffer = this.appendBuffer.bind(this)
 
     if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
@@ -11,7 +10,12 @@ class MSEController {
       this.mimeCodec      = mimeCodec
       this.mediaSource    = new window.MediaSource()
       this.mediaSourceURL = URL.createObjectURL(this.mediaSource);
-      this.mediaSource.addEventListener('sourceopen', this.onSourceOpen)
+      this.mediaSource.addEventListener('sourceopen', (e) => {
+        URL.revokeObjectURL(this.video.src);
+        const mediaSource   = e.target
+        this.sourceBuffer  = mediaSource.addSourceBuffer(this.mimeCodec)
+        this.setVideoCB()        
+      })
 
     } else {
       if ('MediaSource' in window) { throw `Media Type not supported: ${mimeCodec}` }
@@ -19,33 +23,31 @@ class MSEController {
     }
   }
 
-  setVideo(video, setVideoCB) {
-    if (video) {
-      this.setVideoCB = setVideoCB
-      this.video      = video
-      video.src       = this.mediaSourceURL
-    }
+  setVideo(video) {
+    return new Promise((resolve, reject) => {
+      if (video) {
+        this.setVideoCB = () => { resolve() }
+        this.video      = video
+        video.src       = this.mediaSourceURL
+      } else {
+        reject('Video was undefined')
+      }
+    })
   }
 
-  onSourceOpen(e) {
-    URL.revokeObjectURL(this.video.src);
-    const mediaSource   = e.target
-    this.sourceBuffer  = mediaSource.addSourceBuffer(this.mimeCodec)
-    this.setVideoCB()
-  }
-
-  appendBuffer(buffer, updateEndCB) {
-    this.sourceBuffer.appendBuffer(buffer)
-    this.sourceBuffer.onupdateend = (e) => {
-      this.sourceBuffer.onupdateend = undefined
-      updateEndCB()
-    }
+  appendBuffer(buffer) {
+    return new Promise((resolve, reject) => {
+      this.sourceBuffer.appendBuffer(buffer)
+      this.sourceBuffer.onupdateend = (e) => {
+        this.sourceBuffer.onupdateend = undefined
+        resolve()
+      }
+    })
   }
 
   endOfStream() {
     this.mediaSource.endOfStream()
   }
-
 
 }
 
