@@ -131,5 +131,10 @@ test('fetching segments from the playlist WITH prior codec knowledge', t=> {
     t.fail('Failed to fetch segmetns')
     console.log(err);
   })
-
 })
+
+// test('that we pass segment jobs ')
+
+class MockMuxer {
+  constructor() { }
+}

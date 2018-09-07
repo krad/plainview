@@ -1,3 +1,5 @@
+import Manson from '@krad/manson'
+
 /**
 *  @file plainview
 *  @author krad.io <iam@krad.io>
@@ -29,6 +31,8 @@ class plainview {
 
   }
 }
+
+export default plainview
 
 // import Player from './player'
 // import AVSupport from './support'

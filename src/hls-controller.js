@@ -94,16 +94,20 @@ class HLSController {
 
   nextFetchCompleted(segment) {
     Manson.info(`fetched segment #${segment.id} - ${segment.url}`)
-    this.segmentFetchedCallback()
+    this.segmentFetchedCallback(segment)
   }
 
   fetchSegments() {
     Manson.info('beginning segments fetch loop...')
-
     if (!this.playlist) { throw 'Player Misconfigured: Missing playlist' }
-    let stats = {}
-    this.playlist.segments.forEach(s => { stats[s.uri] = 0 })
-    this.downloadStats = stats
+
+    if (this.playlist.type === 'LIVE' || this.playlist.type === 'EVENT') {
+      this.playlist.startAutoRefresh(this.playlistRefreshed)
+    } else {
+      let stats = {}
+      this.playlist.segments.forEach(s => { stats[s.uri] = 0 })
+      this.downloadStats = stats
+    }
 
     return this.playlist.fetchSequentially(this.nextFetchStarted,
                                            this.nextFetchCompleted,
