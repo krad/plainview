@@ -45,8 +45,6 @@ class StreamController {
       })
       .then(_ => {
         return this.hls.fetchSegments()
-      }).then(_ => {
-        resolve()
       }).catch(err => {
         reject(err)
       })

@@ -3,7 +3,7 @@ import Manson from '@krad/manson'
 class MSEController {
   constructor(mimeCodec) {
     this.appendBuffer = this.appendBuffer.bind(this)
-  
+
     if ('MediaSource' in window && MediaSource.isTypeSupported(mimeCodec)) {
 
       Manson.debug(`browser supports mimecodec: ${mimeCodec}`)
@@ -37,6 +37,11 @@ class MSEController {
 
   appendBuffer(buffer) {
     return new Promise((resolve, reject) => {
+      if (this.video.error) {
+        reject(this.video.error)
+        return
+      }
+      
       this.sourceBuffer.appendBuffer(buffer)
       this.sourceBuffer.onupdateend = (e) => {
         this.sourceBuffer.onupdateend = undefined

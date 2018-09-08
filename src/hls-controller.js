@@ -148,7 +148,7 @@ class HLSController {
    * playlistRefreshed - Callback fired when the playlist is refresh
    */
   playlistRefreshed() {
-    Manson.trace('playlist refreshed')
+    Manson.debug('playlist refreshed')
   }
 
   /**
@@ -167,7 +167,7 @@ class HLSController {
    * @param  {Uint8Array} segment Raw byte data fetched for a segment
    */
   nextFetchCompleted(segment) {
-    Manson.info(`fetched segment #${segment.id} - ${segment.url}`)
+    Manson.debug(`fetched segment`)
     this.segmentFetchedCallback(segment)
   }
 
@@ -179,9 +179,10 @@ class HLSController {
    * @return {Promise} A promise of the fetch routine
    */
   fetchSegments() {
-    Manson.info('beginning segments fetch loop...')
+    Manson.debug('beginning segments fetch loop...')
     if (!this.playlist) { throw 'Player Misconfigured: Missing playlist' }
 
+    Manson.debug(this.playlist.type)
     if (this.playlist.type === 'LIVE' || this.playlist.type === 'EVENT') {
       this.playlist.startAutoRefresh(this.playlistRefreshed)
     } else {
@@ -193,7 +194,7 @@ class HLSController {
     return this.playlist.fetchSequentially(this.nextFetchStarted,
                                            this.nextFetchCompleted,
                                            this.segmentDownloadProgress).catch(err => {
-                                             this.playlist.stopAutoRefresh()
+                                             Manson.debug(`Error in sequential fetch ${err}`)
                                            })
   }
 
