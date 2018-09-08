@@ -13,7 +13,7 @@
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
     "@krad/manson": "0.0.2",
-    "@krad/slugline": "^1.2.11"
+    "@krad/slugline": "^1.2.14"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",

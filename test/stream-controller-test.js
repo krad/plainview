@@ -3,7 +3,7 @@ const resolve = require('url').resolve
 import StreamController from '../src/stream-controller'
 
 test('that we can start a stream and feed downloads to the mse', t=> {
-  t.plan(24)
+  t.plan(25)
 
   const url    = resolve(location.href, '/basic/krad.tv/tractor/vod.m3u8')
   const config = { url: url }
