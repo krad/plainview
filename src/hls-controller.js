@@ -72,7 +72,6 @@ class HLSController {
     })
   }
 
-
   /**
    * fetchCodecInfo - Fetches codec information from media associated with the playlist
    *
@@ -96,27 +95,6 @@ class HLSController {
 
 
   /**
-   * nextFetchStarted - Called when the controller begins to fetch the next segment
-   *
-   * @param  {Segment} segment The Segment object that will be fetched
-   */
-  nextFetchStarted(segment) {
-    Manson.debug(`fetching segment #${segment.id} - ${segment.url}`)
-  }
-
-  /**
-   * nextFetchCompleted - Called when a segment fetch has been completed
-   * Has a side effect of calling this.segmentFetchedCallback
-   *
-   * @param  {Uint8Array} segment Raw byte data fetched for a segment
-   */
-  nextFetchCompleted(segment) {
-    Manson.info(`fetched segment #${segment.id} - ${segment.url}`)
-    this.segmentFetchedCallback(segment)
-  }
-
-
-  /**
    * get totalDuration - Total duration of all segments as reported by the playlist
    *
    * @return {Float}  A float representing the duration of the playlist in seconds
@@ -133,9 +111,8 @@ class HLSController {
    * @param  {Object} progress Simple object with properties about how much has been downloaded and how much is left
    */
   segmentDownloadProgress(progress) {
-    this.downloadProgress = progress
+    Manson.trace(progress)
   }
-
 
   /**
    * get downloadProgress - How much progress has been made of the download
@@ -146,7 +123,6 @@ class HLSController {
     if (this.playlist) { return this._downloadProgress }
     return undefined
   }
-
 
   /**
    * set downloadProgress - Setter used to calculate download progress
@@ -169,6 +145,33 @@ class HLSController {
 
 
   /**
+   * playlistRefreshed - Callback fired when the playlist is refresh
+   */
+  playlistRefreshed() {
+    Manson.trace('playlist refreshed')
+  }
+
+  /**
+   * nextFetchStarted - Called when the controller begins to fetch the next segment
+   *
+   * @param  {Segment} segment The Segment object that will be fetched
+   */
+  nextFetchStarted(segment) {
+    Manson.debug(`fetching segment #${segment.id} - ${segment.url}`)
+  }
+
+  /**
+   * nextFetchCompleted - Called when a segment fetch has been completed
+   * Has a side effect of calling this.segmentFetchedCallback
+   *
+   * @param  {Uint8Array} segment Raw byte data fetched for a segment
+   */
+  nextFetchCompleted(segment) {
+    Manson.info(`fetched segment #${segment.id} - ${segment.url}`)
+    this.segmentFetchedCallback(segment)
+  }
+
+  /**
    * fetchSegments - Begins fetching segments in a playlist sequentially
    * If a playlist is of type LIVE or EVENT it will periodically refresh the playlist
    * and fetch all segments appended to it
@@ -189,7 +192,9 @@ class HLSController {
 
     return this.playlist.fetchSequentially(this.nextFetchStarted,
                                            this.nextFetchCompleted,
-                                           this.segmentDownloadProgress)
+                                           this.segmentDownloadProgress).catch(err => {
+                                             this.playlist.stopAutoRefresh()
+                                           })
   }
 
 }

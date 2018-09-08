@@ -15,31 +15,32 @@ export default class Muxer {
    * @return {Promise<Array<Uint8Array>>} Returns an array of Uint8Array.  Arrays greater than 1 in length mean an init segment is at the front
    */
   transcode(bytes) {
-    Manson.info('transcoding new segment')
+    Manson.info('transmuxing new segment')
     return new Promise((resolve, reject) => {
-      Manson.debug(`parsing segment...`)
+      Manson.trace(`parsing segment...`)
 
       const ts = slugline.TransportStream.parse(bytes)
-      Manson.debug('segment parsed.')
+      Manson.trace('segment parsed.')
 
-      Manson.debug('starting transmux...')
+      Manson.trace('starting transmux...')
       this.transmuxer.setCurrentStream(ts)
-      Manson.debug('setup state...')
+      Manson.trace('setup state...')
+
       let res = this.transmuxer.build()
-      Manson.debug('transmux struct built.')
+      Manson.trace('transmux struct built.')
 
       let result = []
       if (this.initSegment === undefined) {
-        Manson.debug('building init segment...')
+        Manson.trace('building init segment...')
         this.initSegment = this.transmuxer.buildInitializationSegment(res[0])
         result.push(this.initSegment)
       }
 
-      Manson.debug('building media info from segment...')
+      Manson.trace('building media info from segment...')
       let media = this.transmuxer.buildMediaSegment(res)
       result.push(media)
-
-      Manson.debug('transmuxing complete.')
+      Manson.info('transmuxing complete.')
+      
       resolve(result)
     })
   }

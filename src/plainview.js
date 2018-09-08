@@ -20,7 +20,10 @@ class plainview {
     this.onPlayProgress     = NOP
     this.onDownloadProgress = NOP
     this.onPlay             = NOP
+    this.onPlaying          = NOP
     this.onPause            = NOP
+    this.onSuspend          = NOP
+    this.onWaiting          = NOP
     this.onReplay           = NOP
     this.onMute             = NOP
     this.onUnmute           = NOP
@@ -31,7 +34,7 @@ class plainview {
 
   setLogLevel(val) { Manson.level = val }
 
-  get video() { return this._val }
+  get video() { return this._video }
 
   set video(val) {
     this._video = val
@@ -57,26 +60,57 @@ class plainview {
       this.onEnded()
     })
 
+    this.video.addEventListener('pause', () => {
+      Manson.trace('player pause event')
+      this.onPause()
+    })
+
+    this.video.addEventListener('suspend', () => {
+      Manson.trace('player suspend event')
+      this.onSuspend()
+    })
+
+    this.video.addEventListener('play', () => {
+      Manson.trace('player play event')
+      this.onPlay()
+    })
+
+    this.video.addEventListener('playing', () => {
+      Manson.trace('player playing event')
+      this.onPlaying()
+    })
+
+    this.video.onstalled = (e) => {
+      Manson.trace(`player stalled event ${e}`)
+      this.onStall()
+    }
+    
     this.video.addEventListener('stalled', (e) => {
       Manson.trace(`player stalled event ${e}`)
       this.onStall()
     })
+
+    this.video.onwaiting = () => {
+      Manson.trace('player waiting event')
+      this.onWaiting()
+    }
 
     this.video.addEventListener('error', (e) => {
       Manson.trace(`player error event ${e}`)
       this.onError()
     })
 
-    this.stream.start().catch(err => {
-      Manson.error('problem starting player')
-      console.log(err);
+    this.runLoop = this.stream.start(this.video)
+    .then(_ => {
+      Manson.info('Reached end of stream')
+      this.onEnded()
     })
+    .catch(err => Manson.error(`problem starting player: ${err}`))
   }
 
   play() {
     Manson.info('user pressed play')
     this.video.play()
-    this.onPlay()
   }
 
   replay() {
@@ -89,7 +123,6 @@ class plainview {
   pause() {
     Manson.info('user pressed paused')
     this.video.pause()
-    this.onPause()
   }
 
   mute() {

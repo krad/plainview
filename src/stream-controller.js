@@ -8,13 +8,14 @@ import AVSupport from './support'
 class StreamController {
 
   constructor(config) {
-    this.segmentDownloaded = this.segmentDownloaded.bind(this)
-    this.segmentConsumedCB = () => {}
-
     this.hls                        = new HLSController(config)
-    this.hls.segmentFetchedCallback = this.segmentDownloaded
     this.muxer                      = new Muxer()
+    this.muxQ                       = PromiseQueue()
     this.q                          = PromiseQueue()
+
+    this.segmentDownloaded          = this.segmentDownloaded.bind(this)
+    this.hls.segmentFetchedCallback = this.segmentDownloaded
+    this.segmentConsumedCB          = () => { }
   }
 
   start(video) {
@@ -30,13 +31,13 @@ class StreamController {
     Manson.debug('browser has native HLS support.  delegating responsibilities')
     return new Promise((resolve, _) => {
       video.src = this.hls.url
-      resolve(0)
+      resolve()
     })
   }
 
   startPlainview(video) {
     Manson.debug('browser does not have native HLS support.  assuming responsibilities')
-    this.runningPromise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.hls.configure()
       .then(_ => {
         this.mse = new MSEController(this.hls.codecsString)
@@ -44,17 +45,27 @@ class StreamController {
       })
       .then(_ => {
         return this.hls.fetchSegments()
+      }).then(_ => {
+        resolve()
+      }).catch(err => {
+        reject(err)
       })
     })
-    return this.runningPromise
   }
 
   segmentDownloaded(segment) {
     if (this.hls.segmentsType === 'ts') {
-      this.q.push(
+      this.muxQ.push(
         this.muxer.transcode(segment)
-        .then(bytes => this.mse.appendBuffer(bytes))
-        .then(_ => this.segmentConsumedCB())
+        .then(res => {
+          if (res.length > 1) {
+            return this.mse.appendBuffer(res[0]).then(_ => this.mse.appendBuffer(res[1]))
+          } else {
+            return this.mse.appendBuffer(res[0])
+          }
+        }).then(_ => {
+          this.segmentConsumedCB()
+        })
       )
     } else {
       this.q.push(
