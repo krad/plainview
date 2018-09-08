@@ -1,4 +1,3 @@
-require('@babel/polyfill')
 import * as slugline from '@krad/slugline'
 import Manson from '@krad/manson'
 import serialPromise from './serial-promise'
@@ -7,14 +6,15 @@ class HLSController {
 
   constructor(config) {
     Manson.trace('configuring HLSController')
-    this.url    = config.url
-    this.codecs = config.codecs
-    this.fetchPlaylist          = this.fetchPlaylist.bind(this)
-    this.fetchCodecInfo         = this.fetchCodecInfo.bind(this)
-    this.nextFetchStarted       = this.nextFetchStarted.bind(this)
-    this.nextFetchCompleted     = this.nextFetchCompleted.bind(this)
-    this.fetchSegments          = this.fetchSegments.bind(this)
-    this.segmentFetchedCallback = () => {}
+    this.url                      = config.url
+    this.codecs                   = config.codecs
+    this.fetchPlaylist            = this.fetchPlaylist.bind(this)
+    this.fetchCodecInfo           = this.fetchCodecInfo.bind(this)
+    this.nextFetchStarted         = this.nextFetchStarted.bind(this)
+    this.nextFetchCompleted       = this.nextFetchCompleted.bind(this)
+    this.fetchSegments            = this.fetchSegments.bind(this)
+    this.segmentFetchedCallback   = () => {}
+    this.segmentDownloadProgress  = this.segmentDownloadProgress.bind(this)
   }
 
   /**
@@ -113,6 +113,58 @@ class HLSController {
   nextFetchCompleted(segment) {
     Manson.info(`fetched segment #${segment.id} - ${segment.url}`)
     this.segmentFetchedCallback(segment)
+  }
+
+
+  /**
+   * get totalDuration - Total duration of all segments as reported by the playlist
+   *
+   * @return {Float}  A float representing the duration of the playlist in seconds
+   */
+  get totalDuration() {
+    if (this.playlist) { return this.playlist.totalDuration }
+    return undefined
+  }
+
+
+  /**
+   * segmentDownloadProgress - Callback used by the fetch process to update the controller about download progress
+   *
+   * @param  {Object} progress Simple object with properties about how much has been downloaded and how much is left
+   */
+  segmentDownloadProgress(progress) {
+    this.downloadProgress = progress
+  }
+
+
+  /**
+   * get downloadProgress - How much progress has been made of the download
+   *
+   * @return {Float}  0.0 - 100.0
+   */
+  get downloadProgress() {
+    if (this.playlist) { return this._downloadProgress }
+    return undefined
+  }
+
+
+  /**
+   * set downloadProgress - Setter used to calculate download progress
+   */
+  set downloadProgress(val) {
+    this.downloadStats[val.uri] = val.progress
+
+    let total = 0
+    const segmentMax = (100/Object.keys(this.downloadStats).length)
+    Object.keys(this.downloadStats).forEach(k => {
+      const segmentProgress = segmentMax * (100 * (this.downloadStats[k]/10000))
+      total += segmentProgress
+    })
+
+    this._downloadProgress = (total.toFixed(2) * 1)
+    if (this.onDownloadProgress) {
+      this.onDownloadProgress(this._downloadProgress)
+    }
   }
 
 
