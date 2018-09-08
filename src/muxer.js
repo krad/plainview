@@ -7,7 +7,6 @@ export default class Muxer {
     this.transmuxer = new slugline.Transmuxer()
   }
 
-
   /**
    * transcode - Transmuxes a transport stream segment into a fmp4 segment
    *
@@ -40,7 +39,7 @@ export default class Muxer {
       let media = this.transmuxer.buildMediaSegment(res)
       result.push(media)
       Manson.info('transmuxing complete.')
-      
+
       resolve(result)
     })
   }

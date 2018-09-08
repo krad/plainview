@@ -2,7 +2,7 @@ import HLSController from './hls-controller'
 import MSEController from './mse-controller'
 import Muxer from './muxer'
 import Manson from '@krad/manson'
-import PromiseQueue from '../src/promise-queue'
+import PromiseQueue from './promise-queue'
 import AVSupport from './support'
 
 class StreamController {
