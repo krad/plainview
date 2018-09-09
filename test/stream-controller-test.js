@@ -3,7 +3,7 @@ const resolve = require('url').resolve
 import StreamController from '../src/stream-controller'
 
 test('that we can start a stream and feed downloads to the mse', t=> {
-  t.plan(25)
+  t.plan(24)
 
   const url    = resolve(location.href, '/basic/krad.tv/tractor/vod.m3u8')
   const config = { url: url }
@@ -15,7 +15,7 @@ test('that we can start a stream and feed downloads to the mse', t=> {
   const video = document.createElement('video')
 
   stream.segmentConsumedCB = () => {
-    video.play()
+    // video.play()
     t.ok(1, 'Got segment consumed notification')
   }
 
@@ -30,7 +30,7 @@ test('that we can start a stream and feed downloads to the mse', t=> {
 })
 
 test('that we can start a stream, transmux it and feed results to the mse', t=> {
-  t.plan(30)
+  t.plan(182)
 
   const url    = resolve(location.href, '/apple-basic-ts/gear1/prog_index.m3u8')
   const config = { url: url }

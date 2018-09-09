@@ -44,7 +44,7 @@ class plainview {
     this.video.setAttribute('autoplay', 'true')
 
     this.video.addEventListener('timeupdate', (e) => {
-      Manson.trace(`timeupdate event: ${e}`)
+      Manson.debug(`timeupdate event: ${e}`)
       // const progress = percentageComplete(this.video.currentTime, this.player.totalDuration)
       // const timecode  = makeTimeCode(this.video.currentTime)
       // const total     = makeTimeCode(this.player.totalDuration)
@@ -52,58 +52,55 @@ class plainview {
     })
 
     this.video.addEventListener('canplay', () => {
-      Manson.trace('player canplay event')
+      Manson.debug('player canplay event')
       this.onCanPlay()
     })
 
     this.video.addEventListener('ended', (e) => {
-      Manson.trace('player ended event')
+      Manson.debug('player ended event')
       this.onEnded()
     })
 
     this.video.addEventListener('pause', () => {
-      Manson.trace('player pause event')
+      Manson.debug('player pause event')
       this.onPause()
     })
 
     this.video.addEventListener('suspend', () => {
-      Manson.trace('player suspend event')
+      Manson.debug('player suspend event')
       this.onSuspend()
     })
 
     this.video.addEventListener('play', () => {
-      Manson.trace('player play event')
+      Manson.debug('player play event')
       this.onPlay()
     })
 
     this.video.addEventListener('playing', () => {
-      Manson.trace('player playing event')
+      Manson.debug('player playing event')
       this.onPlaying()
     })
 
-    this.video.onstalled = (e) => {
-      Manson.trace(`player stalled event ${e}`)
-      this.onStall()
-    }
-
     this.video.addEventListener('stalled', (e) => {
-      Manson.trace(`player stalled event ${e}`)
+      Manson.debug(`player stalled event ${e}`)
+      console.log(e);
       this.onStall()
     })
 
     this.video.onwaiting = () => {
-      Manson.trace('player waiting event')
+      Manson.debug('player waiting event')
       this.onWaiting()
     }
 
     this.video.addEventListener('error', (e) => {
-      Manson.trace(`player error event ${e}`)
+      Manson.debug(`player error event ${e}`)
+      console.log(e);
       this.onError()
     })
 
     this.runLoop = this.stream.start(this.video)
     .then(_ => {
-      Manson.info('Reached end of stream')
+      Manson.debug('Reached end of stream')
       this.onEnded()
     })
     .catch(err => Manson.error(`problem starting player: ${err}`))

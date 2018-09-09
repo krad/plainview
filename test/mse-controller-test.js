@@ -28,8 +28,8 @@ test('that we can create a source', t=> {
 
 })
 
-test('that we can feed media samples to an open source', t=> {
-  t.plan(24)
+test('that we can feed media samples to an open source', async t=> {
+  t.plan(23)
   t.timeoutAfter(10000)
 
   const url       = resolve(location.href, '/basic/krad.tv/tractor/vod.m3u8')
@@ -43,34 +43,17 @@ test('that we can feed media samples to an open source', t=> {
   const mse   = new MSEController(mimeCodec)
   const video = document.createElement('video')
 
-  hls.configure()
-  .then(_ => hls.start())
-  .then(_ => {
-    return mse.setVideo(video)
-  }).then(_ => {
-    t.ok(1, 'Got on source open callback')
-    t.equals(22, segments.length, 'stored all the segments')
+  await hls.configure()
+  await hls.start()
+  t.equals(22, segments.length, 'stored all the segments')
 
-    return new Promise((resolve, reject) => {
-      const loop = () => {
-        const segment = segments.shift()
-        if (segment) {
-          t.ok(segment, 'got next segment')
-          /// video.play() // <- Uncommenting this an tapping on the browser when it's run shows that this works
-          mse.appendBuffer(segment).then(loop)
-        } else {
-          resolve()
-        }
-      }
-      loop()
-    })
+  await mse.setVideo(video)
 
-  }).then(_ => {
-    console.log('At the end');
-    mse.endOfStream()
-  }).catch(err => {
-    t.fail('Failed to fetch segments')
-    console.log(err);
-  })
+  for (let segment of segments) {
+    await mse.appendBuffer(segment)
+    t.ok(segment, 'segment consumed')
+  }
+
+  mse.endOfStream()
 
 })

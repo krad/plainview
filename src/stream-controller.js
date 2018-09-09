@@ -16,7 +16,7 @@ class StreamController {
     this.segmentConsumedCB          = () => { }
   }
 
-  start(video) {
+  async start(video) {
     Manson.info('starting stream...')
     if (AVSupport.hasNativeHLSSupportFor(video)) {
       return this.startNative(video)
@@ -25,7 +25,7 @@ class StreamController {
     }
   }
 
-  startNative(video) {
+  async startNative(video) {
     Manson.debug('browser has native HLS support.  delegating responsibilities')
     return new Promise((resolve, _) => {
       video.src = this.hls.url
@@ -33,7 +33,7 @@ class StreamController {
     })
   }
 
-  startPlainview(video) {
+  async startPlainview(video) {
     Manson.debug('browser does not have native HLS support.  assuming responsibilities')
     return new Promise((resolve, reject) => {
       this.hls.configure()
