@@ -21,7 +21,6 @@ test('that we can start a stream and feed downloads to the mse', t=> {
 
   stream.start(video)
   .then(_ => {
-    console.log('hello');
     t.ok(1, 'Streamed the video')
   }).catch(err => {
     t.fail('Stream failed to start')

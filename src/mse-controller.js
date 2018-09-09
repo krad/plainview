@@ -1,3 +1,4 @@
+import "@babel/polyfill"
 import Manson from '@krad/manson'
 
 class MSEController {
@@ -23,7 +24,7 @@ class MSEController {
     }
   }
 
-  setVideo(video) {
+  async setVideo(video) {
     return new Promise((resolve, reject) => {
       if (video) {
         this.setVideoCB = () => { resolve() }
@@ -35,13 +36,13 @@ class MSEController {
     })
   }
 
-  appendBuffer(buffer) {
+  async appendBuffer(buffer) {
     return new Promise((resolve, reject) => {
       if (this.video.error) {
         reject(this.video.error)
         return
       }
-      
+
       this.sourceBuffer.appendBuffer(buffer)
       this.sourceBuffer.onupdateend = (e) => {
         this.sourceBuffer.onupdateend = undefined

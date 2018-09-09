@@ -1,3 +1,13 @@
 {
-  "presets": ["es2015"]
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "browsers": ["last 2 versions", "IE >= 9"]
+        },
+        "useBuiltIns": "entry"
+      }
+    ]
+  ]
 }

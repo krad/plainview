@@ -13,7 +13,7 @@ export default class Muxer {
    * @param  {Uint8Array} bytes An array of unsigned 8 bit integers representing the TS segment
    * @return {Promise<Array<Uint8Array>>} Returns an array of Uint8Array.  Arrays greater than 1 in length mean an init segment is at the front
    */
-  transcode(bytes) {
+  async transcode(bytes) {
     Manson.info('transmuxing new segment')
     return new Promise((resolve, reject) => {
       Manson.trace(`parsing segment...`)

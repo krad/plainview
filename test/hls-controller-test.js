@@ -90,18 +90,20 @@ test('fetching segments from the playlist WITHOUT prior codec knowledge', t=> {
   const url    = resolve(location.href, '/basic/krad.tv/tractor/vod.m3u8')
   const config = { url: url }
 
-  const hls             = new HLSController(config)
-  let fetchedSegmentCnt = 0
-  hls.segmentFetchedCallback = (segment) => { fetchedSegmentCnt++ }
+  const hls                   = new HLSController(config)
+  let fetchedSegmentCnt       = 0
+  hls.segmentFetchedCallback  = (segment) => {
+    fetchedSegmentCnt++
+  }
 
   hls.configure()
-  .then(_ => hls.fetchSegments())
+  .then(_ => hls.start())
   .then(_ => {
     t.ok(1, 'got fetch segments completion callback')
     t.equals(22, fetchedSegmentCnt, 'got correct amount of segments back')
     t.equals(hls.segmentsType, 'fmp4', 'controller knows we are dealing with fmp4 segments')
   }).catch(err => {
-    t.fail('Failed to fetch segmetns')
+    t.fail('Failed to fetch segments')
     console.log(err);
   })
 
@@ -122,7 +124,7 @@ test('fetching segments from the playlist WITH prior codec knowledge', t=> {
   hls.segmentFetchedCallback = (segment) => { fetchedSegmentCnt++ }
 
   hls.configure()
-  .then(_ => hls.fetchSegments())
+  .then(_ => hls.start())
   .then(_ => {
     t.ok(1, 'got fetch segments completion callback')
     t.equals(22, fetchedSegmentCnt, 'got correct amount of segments back')

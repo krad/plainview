@@ -4,6 +4,7 @@
 *  @version 1.3.19
 */
 
+import "@babel/polyfill"
 import StreamController from './stream-controller'
 import Manson from '@krad/manson'
 import { percentageComplete, makeTimeCode } from './time-code-helpers'
@@ -84,7 +85,7 @@ class plainview {
       Manson.trace(`player stalled event ${e}`)
       this.onStall()
     }
-    
+
     this.video.addEventListener('stalled', (e) => {
       Manson.trace(`player stalled event ${e}`)
       this.onStall()

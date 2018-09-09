@@ -44,7 +44,7 @@ test('that we can feed media samples to an open source', t=> {
   const video = document.createElement('video')
 
   hls.configure()
-  .then(_ => hls.fetchSegments())
+  .then(_ => hls.start())
   .then(_ => {
     return mse.setVideo(video)
   }).then(_ => {

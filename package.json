@@ -5,7 +5,7 @@
   "main": "distribution/plainview.js",
   "scripts": {
     "test": "testling | tap-spec",
-    "build": "babel src --presets babel-preset-es2015 --out-dir distribution",
+    "build": "babel src --presets @babel/env --out-dir distribution",
     "debug": "babel-node --inspect --debug-brk distribution/plainview.js"
   },
   "author": "iam@krad.io",
@@ -16,18 +16,16 @@
     "@krad/slugline": "^1.2.14"
   },
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-preset-es2015": "^6.24.1",
-    "babelify": "^8.0.0",
+    "@babel/core": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "babelify": "^10.0.0",
     "cors": "^2.8.4",
     "express": "^4.16.3",
     "tap-spec": "^5.0.0",
     "tape": "^4.9.1"
   },
   "browserify": {
-    "transform": [
-      "babelify"
-    ]
+    "transform": [["babelify", { "presets": ["@babel/preset-env"] }]]
   },
   "testling": {
     "server": "./test/fixtures/serve.js",
