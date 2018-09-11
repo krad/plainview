@@ -175,10 +175,14 @@ class HLSController {
 
   async fetch(segments) {
     for (let segment of segments) {
+      if (segment.id <= this.lastSegmentID) {
+        continue
+      }
+
       Manson.debug(`fetching segment #${segment.id}`)
+      this.lastSegmentID = segment.id
       const segmentData = await segment.fetch()
       this.segmentFetchedCallback(segmentData)
-      this.lastSegmentID = segment.id
     }
   }
 
