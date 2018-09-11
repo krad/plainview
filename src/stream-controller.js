@@ -12,8 +12,11 @@ class StreamController {
     this.muxer                      = new Muxer()
 
     this.segmentDownloaded          = this.segmentDownloaded.bind(this)
+    this.process                    = this.process.bind(this)
     this.hls.segmentFetchedCallback = this.segmentDownloaded
     this.segmentConsumedCB          = () => { }
+    this.segments                   = []
+    this.processing                 = false
   }
 
   async start(video) {
@@ -49,19 +52,29 @@ class StreamController {
     })
   }
 
-  async segmentDownloaded(segment) {
-    if (this.hls.segmentsType === 'ts') {
+  segmentDownloaded(segment) {
+    this.segments.push(segment)
+    this.process()
+  }
 
-      const res = await this.muxer.transcode(segment)
-      for (let segment of res) {
+  async process() {
+    if (!this.processing) {
+      this.processing = true
+      let segment     = this.segments.shift()
+      if (this.hls.segmentsType === 'ts') {
+        const res = await this.muxer.transcode(segment)
+        for (let segment of res) {
+          await this.mse.appendBuffer(segment)
+        }
+      } else {
         await this.mse.appendBuffer(segment)
       }
-
-    } else {
-      await this.mse.appendBuffer(segment)
+      this.segmentConsumedCB()
+      this.processing = false
+      if (this.segments.length > 0) {
+        this.process()
+      }
     }
-
-    this.segmentConsumedCB()
   }
 
 }
