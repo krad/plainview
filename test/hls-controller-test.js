@@ -11,7 +11,7 @@ test('fetching a playlist', t=> {
 
   const hls = new HLSController(config)
   t.equals(config.url, hls.url, 'configured the url')
-  hls.fetchPlaylist().then(playlist => {
+  hls.fetchPlaylist(config.url).then(playlist => {
     t.ok(playlist, 'fetched a playlist')
     t.equals(hls.playlist, playlist, 'hls controller assigned playlist property')
   }).catch(err => {
@@ -135,8 +135,20 @@ test('fetching segments from the playlist WITH prior codec knowledge', t=> {
   })
 })
 
-// test('that we pass segment jobs ')
+test('fetching a master playlist and the lowest bandwidth media playlist', t=> {
+  t.plan(2)
 
-class MockMuxer {
-  constructor() { }
-}
+  const url     = resolve(location.href, '/apple-basic-ts/bipbop_4x3_variant.m3u8')
+  const config  = { url: url }
+
+  const hls = new HLSController(config)
+  hls.configure()
+  .then(_ => {
+    t.ok(hls.masterPlaylist, 'has a master playlist object set')
+    t.ok(hls.playlist, 'has a playlist object set')
+  }).catch(err => {
+    console.log(err);
+    t.fail('failed to configure hls controller')
+  })
+
+})

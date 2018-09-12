@@ -22,7 +22,17 @@ class HLSController {
    * @return {Promise} Executes n number of promises serially to mutate the state of the controller
    */
   async configure() {
-    if (!this.playlist) { await this.fetchPlaylist() }
+    if (!this.playlist) { await this.fetchPlaylist(this.url) }
+
+    if (this.playlist.objType === 'MasterPlaylist') {
+      this.masterPlaylist = this.playlist
+
+      const variant = this.masterPlaylist.completeVariants.sort((a, b) => a.bandwidth - b.bandwidth)[0]
+      if (variant) {
+        await this.fetchPlaylist(variant.url)
+      }
+    }
+
     if (!this.codecs) { await this.fetchCodecInfo() }
   }
 
@@ -57,11 +67,11 @@ class HLSController {
    *
    * @return {Promise<Playlist>} Returns a Playlist object from slugline when successful
    */
-  fetchPlaylist() {
+  fetchPlaylist(url) {
     return new Promise((resolve, reject) => {
-      Manson.debug(`fetching playlist ${this.url}`)
-      slugline.Playlist.fetch(this.url).then(playlist => {
-        this.playlist     = playlist
+      Manson.debug(`fetching playlist ${url}`)
+      slugline.Playlist.fetch(url).then(playlist => {
+        this.playlist = playlist
         resolve(playlist)
       }).catch(err => {
         reject(err)
