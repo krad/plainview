@@ -82,8 +82,7 @@ class plainview {
     })
 
     this.video.addEventListener('stalled', (e) => {
-      Manson.trace(`player stalled event ${e}`)
-      console.log(e);
+      Manson.trace(`player stalled event ${JSON.stringify(e)}`)
       this.onStall()
     })
 

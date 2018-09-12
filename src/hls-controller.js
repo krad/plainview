@@ -144,7 +144,7 @@ class HLSController {
    * playlistRefreshed - Callback fired when the playlist is refresh
    */
   playlistRefreshed() {
-    Manson.debug('playlist refreshed')
+    Manson.trace('playlist refreshed')
     let segments = []
     if (this.lastSegmentID) {
       segments = this.playlist.segments.filter(s => s.id > this.lastSegmentID)
@@ -164,7 +164,7 @@ class HLSController {
    * @return {Promise} A promise of the fetch routine
    */
   async start() {
-    Manson.debug('beginning segments fetch loop...')
+    Manson.trace('beginning segments fetch loop...')
     if (!this.playlist) { throw 'Player Misconfigured: Missing playlist' }
     if (this.playlist.type === 'LIVE' || this.playlist.type === 'EVENT') {
       this.playlist.startAutoRefresh(this.playlistRefreshed)
