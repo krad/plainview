@@ -118,7 +118,8 @@ class HLSController {
    * @param  {Object} progress Simple object with properties about how much has been downloaded and how much is left
    */
   segmentDownloadProgress(progress) {
-    Manson.trace(progress)
+    Manson.trace(JSON.stringify(progress))
+    this.downloadProgress = progress
   }
 
   /**
@@ -176,6 +177,11 @@ class HLSController {
   async start() {
     Manson.trace('beginning segments fetch loop...')
     if (!this.playlist) { throw 'Player Misconfigured: Missing playlist' }
+
+    let stats = {}
+    this.playlist.segments.forEach(s => { stats[s.uri] = 0 })
+    this.downloadStats = stats
+
     if (this.playlist.type === 'LIVE' || this.playlist.type === 'EVENT') {
       this.playlist.startAutoRefresh(this.playlistRefreshed)
     }
@@ -191,7 +197,7 @@ class HLSController {
 
       Manson.debug(`fetching segment #${segment.id}`)
       this.lastSegmentID = segment.id
-      const segmentData = await segment.fetch()
+      const segmentData = await segment.fetch(this.segmentDownloadProgress)
       this.segmentFetchedCallback(segmentData)
     }
   }

@@ -45,10 +45,10 @@ class plainview {
 
     this.video.addEventListener('timeupdate', (e) => {
       Manson.trace(`timeupdate event: ${e}`)
-      // const progress = percentageComplete(this.video.currentTime, this.player.totalDuration)
-      // const timecode  = makeTimeCode(this.video.currentTime)
-      // const total     = makeTimeCode(this.player.totalDuration)
-      // this.onPlayProgress(progress, timecode, total)
+      const progress = percentageComplete(this.video.currentTime, this.stream.totalDuration)
+      const timecode  = makeTimeCode(this.video.currentTime)
+      const total     = makeTimeCode(this.stream.totalDuration)
+      this.onPlayProgress(progress, timecode, total)
     })
 
     this.video.addEventListener('canplay', () => {
@@ -145,6 +145,10 @@ class plainview {
     }
   }
 
+  set onDownloadProgress(cb) {
+    if (this.stream) { this.stream.onDownloadProgress = cb }
+  }
+
 }
 
 export default plainview
@@ -155,4 +159,4 @@ export default plainview
 //         // this.onPlayProgress(0, timecode, total)2
 //
 //
-// export { makeTimeCode }
+export { makeTimeCode }

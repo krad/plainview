@@ -77,6 +77,16 @@ class StreamController {
     }
   }
 
+  get totalDuration() {
+    if (this.hls && this.hls.playlist) {
+      return this.hls.playlist.totalDuration
+    }
+  }
+
+  set onDownloadProgress(cb) {
+    if (this.hls) { this.hls.onDownloadProgress = cb }
+  }
+
 }
 
 export default StreamController
